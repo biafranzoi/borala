@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Viagem coletiva — Boralá!</title>
+<meta name="description" content="Uma viagem em grupo: votação do destino, rateio dos custos e checklist compartilhado.">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/design-system.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<div data-header></div>
+
+<main id="conteudo"></main>
+
+<div data-footer></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  if (!BL.iniciar({ nav: "viagens", exigeLogin: true, modo: "viajante" })) return;
+
+  const p = BL.params();
+  const conteudo = document.getElementById("conteudo");
+
+  /* Cópia de trabalho: votos e checklist mudam na tela sem alterar os
+     dados de exemplo — o que a pessoa cria mora no localStorage. */
+  const original = blBuscarViagem(p.id || "fim-de-ano", BL.viagens());
+  if (!original) {
+    conteudo.innerHTML =
+      '<div class="container section"><div class="empty">' +
+        '<span class="icon-tile">' + BL.icone("pessoas", "icon--lg") + "</span>" +
+        "<h2>Viagem não encontrada</h2>" +
+        '<p class="text-secondary measure">O convite pode ter expirado ou a viagem foi encerrada por quem organiza.</p>' +
+        '<a class="btn" href="viagens.html">Ver minhas viagens</a>' +
+      "</div></div>";
+    return;
+  }
+
+  const viagem = JSON.parse(JSON.stringify(original));
+  document.title = viagem.nome + " — Boralá!";
+
+  /* destino sugerido vindo da página de detalhe */
+  if (p.destino && !viagem.candidatos.some(function (c) { return c.destinoId === p.destino; })) {
+    viagem.candidatos.push({ destinoId: p.destino, votos: 0 });
+    const sugerido = blBuscarDestino(p.destino);
+    if (sugerido) BL.toast(sugerido.nome + " entrou na votação do grupo.", "sucesso");
+  }
+
+  let meuVoto = null;
+
+  function pessoas() { return viagem.membros.length; }
+  function plural(n, um, varios) { return n + " " + (n === 1 ? um : varios); }
+  function totalVotos() { return blVotosDaViagem(viagem) || 1; }
+  function fechada() { return viagem.status !== "votacao"; }
+
+  function render() {
+    const lider = blLiderDaViagem(viagem);
+    const st = fechada()
+      ? (viagem.status === "encerrada"
+          ? '<span class="badge badge--neutral">' + BL.icone("check", "icon--sm") + "Viagem encerrada</span>"
+          : '<span class="badge">' + BL.icone("check-circulo", "icon--sm") + "Destino definido</span>")
+      : '<span class="badge badge--premium">' + BL.icone("pessoas", "icon--sm") + "Votação aberta</span>";
+
+    conteudo.innerHTML =
+      '<section class="hero hero--sm hero--foto">' +
+        '<img class="hero__bg" src="' + (lider ? lider.img : "assets/img/planejamento.jpg") + '" alt="">' +
+        '<div class="container hero__inner">' +
+          '<a class="link" href="viagens.html">' + BL.icone("voltar", "icon--sm") + "Voltar para viagens coletivas</a>" +
+          '<div class="cluster between gap-6 mt-6" style="align-items: flex-end">' +
+            "<div><h1>" + viagem.nome + "</h1>" +
+              '<p class="hero__lead">' + BL.icone("calendario", "icon--sm") + " " + viagem.periodo + " · " + plural(pessoas(), "pessoa", "pessoas") + "</p></div>" +
+            st +
+          "</div>" +
+        "</div>" +
+      "</section>" +
+
+      '<section class="section"><div class="container" id="area-viagem"></div></section>';
+
+    document.getElementById("area-viagem").innerHTML =
+      '<div data-premium data-premium-origem="viagens" ' +
+           'data-premium-titulo="Viagens coletivas são para assinantes" ' +
+           'data-premium-texto="Organize a viagem com até 10 pessoas: votação de destino, rateio de custos e checklist compartilhado.">' +
+
+        '<div class="grid grid--aside">' +
+
+          "<div>" +
+            /* --- turma --- */
+            '<div class="card blob-tl">' +
+              '<div class="cluster between gap-4">' +
+                "<div><h2>A turma</h2>" +
+                  '<p class="text-secondary mt-2">' + plural(pessoas(), "confirmada", "confirmadas") + " · organizada por " + viagem.organizador +
+                  (viagem.convidadosPendentes ? " · " + plural(viagem.convidadosPendentes, "convite sem resposta", "convites sem resposta") : "") + "</p></div>" +
+                '<div class="avatar-stack">' + viagem.membros.map(function (m) {
+                  return '<img class="avatar avatar--sm" src="' + m.avatar + '" alt="' + m.nome + '" title="' + m.nome + '">';
+                }).join("") + "</div>" +
+              "</div>" +
+              '<div class="cluster gap-3 mt-6">' +
+                '<button class="btn btn--outline btn--sm" type="button" id="copiar-link">' + BL.icone("copiar", "icon--sm") + " Copiar link do convite</button>" +
+                '<button class="btn btn--ghost btn--sm" type="button" id="convidar">' + BL.icone("mais", "icon--sm") + " Convidar por e-mail</button>" +
+              "</div>" +
+            "</div>" +
+
+            /* --- votação --- */
+            '<h3 class="mt-12">' + (fechada() ? "Resultado da votação" : "Votação do destino") + "</h3>" +
+            '<p class="body-sm text-secondary mt-2">' + (fechada()
+              ? "A votação foi fechada em " + (lider ? lider.nome : "um destino") + ". O histórico fica aqui para o grupo consultar."
+              : "Cada pessoa tem um voto, e dá para trocar até a votação fechar.") + "</p>" +
+            '<div class="stack gap-4 mt-6" id="votacao"></div>' +
+            (fechada() ? "" :
+              '<div class="cluster between gap-4 mt-6">' +
+                '<a class="link body-sm" href="resultados.html" style="display:inline-flex">' + BL.icone("mais", "icon--sm") + " Sugerir outro destino</a>" +
+                (viagem.candidatos.length
+                  ? '<button class="btn btn--outline btn--sm" type="button" id="fechar-votacao">' + BL.icone("check", "icon--sm") + " Fechar no destino líder</button>"
+                  : "") +
+              "</div>") +
+          "</div>" +
+
+          "<aside>" +
+            '<div class="card card--brand-subtle blob-tr">' +
+              "<h4>Rateio estimado</h4>" +
+              '<div id="rateio" class="mt-4"></div>' +
+            "</div>" +
+
+            '<div class="card mt-6">' +
+              '<div class="cluster between gap-3"><h4>Checklist do grupo</h4>' +
+                '<span class="caption text-secondary" id="progresso-checklist"></span></div>' +
+              '<div class="stack gap-3 mt-4" id="checklist"></div>' +
+            "</div>" +
+
+            (viagem.status === "encerrada"
+              ? '<div class="card card--flat mt-6">' +
+                  '<div class="cluster gap-3"><span class="icon-tile icon-tile--sm" style="width:40px;height:40px">' + BL.icone("camera", "icon--sm") + "</span>" +
+                  "<div><strong class=\"body-sm\">As fotos viraram álbum</strong>" +
+                  '<p class="caption text-secondary mt-1">O grupo publicou o álbum desta viagem no feed.</p></div></div>' +
+                  '<a class="btn btn--outline btn--sm btn--block mt-4" href="album.html">Ver o álbum ' + BL.icone("seta", "icon--sm") + "</a>" +
+                "</div>"
+              : "") +
+          "</aside>" +
+
+        "</div>" +
+      "</div>";
+
+    renderVotacao();
+    renderRateio(lider);
+    renderChecklist();
+    ligarAcoes();
+    BL.aplicarBloqueios();
+  }
+
+  /* ---------- votação ---------- */
+  function renderVotacao() {
+    const elVotacao = document.getElementById("votacao");
+    if (!viagem.candidatos.length) {
+      elVotacao.innerHTML =
+        '<div class="empty" style="padding: var(--space-10) var(--space-6)">' +
+          '<span class="icon-tile">' + BL.icone("marcador", "icon--lg") + "</span>" +
+          "<h4>Nenhum destino na mesa ainda</h4>" +
+          '<p class="text-secondary measure">Procure nos resultados e mande para cá os destinos que a turma quer disputar.</p>' +
+          '<a class="btn" href="resultados.html">Boralá! ' + BL.icone("seta", "icon--sm") + "</a>" +
+        "</div>";
+      return;
+    }
+
+    const ordenados = viagem.candidatos.slice().sort(function (a, b) { return b.votos - a.votos; });
+    ordenados.forEach(function (c) {
+      const d = blBuscarDestino(c.destinoId);
+      if (!d) return;
+      const pct = Math.round((c.votos / totalVotos()) * 100);
+      const vencedor = viagem.destinoEscolhido === c.destinoId;
+      const votado = meuVoto === c.destinoId;
+      const item = BL.el(
+        '<div class="vote ' + (votado || vencedor ? "is-voted" : "") + '">' +
+          '<img class="vote__thumb" src="' + d.img + '" alt="">' +
+          '<div class="vote__body">' +
+            '<div class="cluster between gap-3">' +
+              "<div><strong>" + d.nome + "</strong>" +
+                '<p class="caption text-secondary">' + d.uf + " · " + BL.dinheiro(d.preco) + " por pessoa</p></div>" +
+              '<strong class="body-sm">' + c.votos + " voto" + (c.votos === 1 ? "" : "s") + " · " + pct + "%</strong>" +
+            "</div>" +
+            '<div class="meter' + (vencedor ? " meter--success" : "") + '"><span class="meter__fill" style="width:' + pct + '%"></span></div>' +
+          "</div>" +
+          (fechada()
+            ? (vencedor ? '<span class="tag tag--success">' + BL.icone("check", "icon--sm") + "escolhido</span>" : "")
+            : '<button class="btn ' + (votado ? "" : "btn--outline") + ' btn--sm" type="button">' +
+                (votado ? BL.icone("check", "icon--sm") + " Meu voto" : "Votar") + "</button>") +
+        "</div>"
+      );
+
+      const btn = item.querySelector("button");
+      if (btn) {
+        btn.addEventListener("click", function () {
+          if (meuVoto === c.destinoId) {
+            c.votos = Math.max(0, c.votos - 1);
+            meuVoto = null;
+          } else {
+            if (meuVoto) {
+              const anterior = viagem.candidatos.find(function (x) { return x.destinoId === meuVoto; });
+              if (anterior) anterior.votos = Math.max(0, anterior.votos - 1);
+            }
+            c.votos += 1;
+            meuVoto = c.destinoId;
+            BL.toast("Voto registrado em " + d.nome + ".", "sucesso");
+          }
+          render();
+        });
+      }
+      elVotacao.appendChild(item);
+    });
+  }
+
+  /* ---------- rateio ---------- */
+  function renderRateio(lider) {
+    const alvo = document.getElementById("rateio");
+    if (!lider) {
+      alvo.innerHTML = '<p class="body-sm">O rateio aparece assim que houver um destino na votação.</p>';
+      return;
+    }
+    const total = lider.preco * pessoas();
+    alvo.innerHTML =
+      '<p class="body-sm">Com base em <strong>' + lider.nome + "</strong>, " +
+        (viagem.destinoEscolhido ? "destino escolhido pelo grupo" : "destino líder da votação") + ":</p>" +
+      '<div class="cluster between mt-4"><span class="body-sm text-secondary">Por pessoa</span><strong>' + BL.dinheiro(lider.preco) + "</strong></div>" +
+      '<div class="cluster between mt-2"><span class="body-sm text-secondary">' + pessoas() + " pessoas</span><strong>" + BL.dinheiro(total) + "</strong></div>" +
+      '<hr class="divider mt-4">' +
+      '<p class="caption text-secondary mt-4">Inclui hospedagem e passeios estimados para ' + lider.noites +
+        " noites. Transporte entra depois que a turma fechar a data.</p>";
+  }
+
+  /* ---------- checklist ---------- */
+  function renderChecklist() {
+    const elCheck = document.getElementById("checklist");
+    elCheck.innerHTML = "";
+    viagem.checklist.forEach(function (item, i) {
+      const label = BL.el(
+        '<label class="check"><input type="checkbox"' + (item.feito ? " checked" : "") + ">" +
+        '<span class="check__box">' + BL.icone("check") + "</span><span>" + item.texto + "</span></label>"
+      );
+      label.querySelector("input").addEventListener("change", function (ev) {
+        viagem.checklist[i].feito = ev.target.checked;
+        BL.atualizarViagem(viagem.id, { checklist: viagem.checklist });
+        if (ev.target.checked) BL.toast("Item concluído!");
+        atualizarProgresso();
+      });
+      elCheck.appendChild(label);
+    });
+    atualizarProgresso();
+  }
+
+  function atualizarProgresso() {
+    const feitos = viagem.checklist.filter(function (i) { return i.feito; }).length;
+    const alvo = document.getElementById("progresso-checklist");
+    if (alvo) alvo.textContent = feitos + " de " + viagem.checklist.length;
+  }
+
+  /* ---------- ações ---------- */
+  function ligarAcoes() {
+    const btnLink = document.getElementById("copiar-link");
+    if (btnLink) {
+      btnLink.addEventListener("click", function () {
+        const link = location.origin + location.pathname + "?id=" + viagem.id;
+        if (navigator.clipboard) navigator.clipboard.writeText(link).catch(function () {});
+        BL.toast("Link do convite copiado!", "sucesso");
+      });
+    }
+
+    const btnConvidar = document.getElementById("convidar");
+    if (btnConvidar) {
+      btnConvidar.addEventListener("click", function () {
+        BL.toast("No protótipo o convite por e-mail é só demonstrativo.");
+      });
+    }
+
+    const btnFechar = document.getElementById("fechar-votacao");
+    if (btnFechar) {
+      btnFechar.addEventListener("click", function () {
+        const lider = blLiderDaViagem(viagem);
+        if (!lider) return;
+        viagem.destinoEscolhido = lider.id;
+        viagem.status = "definida";
+        BL.atualizarViagem(viagem.id, { destinoEscolhido: lider.id, status: "definida" });
+        BL.toast("Votação fechada em " + lider.nome + ".", "sucesso");
+        render();
+      });
+    }
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

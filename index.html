@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boralá! — descubra seu próximo destino</title>
+<meta name="description" content="Selecione os detalhes da próxima viagem dos seus sonhos e veja os destinos personalizados para você.">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/design-system.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+<div data-header></div>
+
+<main id="conteudo">
+
+  <!-- ============== HERO ==============
+       O quiz é o coração do produto e serve aos dois estados; só o texto
+       em volta muda. Para quem já entrou não faz sentido explicar o que o
+       site é — a pessoa já sabe, já tem conta.
+       v3: o hero deixou de ser um bloco laranja com a foto apagada atrás.
+       Fundo areia, título em Fraunces com a palavra da entonação em
+       itálico, e a foto em cor cheia ao lado. -->
+  <section class="hero" id="buscar">
+    <!-- sem hero__bg aqui: a foto da composição já é a peça principal;
+         a lavagem de fundo só brigaria com ela -->
+    <div class="container hero__inner">
+      <div class="hero__grid">
+        <div>
+          <div data-se="visitante">
+            <span class="eyebrow">Viaje a partir de onde você está</span>
+            <h1 class="display hero__title mt-3">Bora pra onde <em>dessa vez?</em></h1>
+            <p class="hero__lead">
+              Diga de onde você sai e quanto tempo de viagem aceita.
+              A gente mostra para onde dá para ir — de ônibus, de carro ou de avião.
+            </p>
+
+            <!-- Prova social fica aqui, perto da promessa, e não numa
+                 faixa de números solta no meio da página. -->
+            <div class="hero__prova">
+              <div class="avatar-stack">
+                <img class="avatar avatar--sm" src="assets/img/p1.jpg" alt="">
+                <img class="avatar avatar--sm" src="assets/img/p2.jpg" alt="">
+                <img class="avatar avatar--sm" src="assets/img/p3.jpg" alt="">
+                <img class="avatar avatar--sm" src="assets/img/p4.jpg" alt="">
+                <img class="avatar avatar--sm" src="assets/img/p5.jpg" alt="">
+              </div>
+              <div>
+                <span class="stars" aria-hidden="true">
+                  <span data-icone="estrela" data-icone-classe="icon--sm"></span>
+                  <span data-icone="estrela" data-icone-classe="icon--sm"></span>
+                  <span data-icone="estrela" data-icone-classe="icon--sm"></span>
+                  <span data-icone="estrela" data-icone-classe="icon--sm"></span>
+                  <span data-icone="estrela" data-icone-classe="icon--sm"></span>
+                </span>
+                <p class="caption">4,8 de média nas avaliações de quem já viajou</p>
+              </div>
+            </div>
+          </div>
+
+          <div data-se="logado">
+            <span class="eyebrow">Sua próxima viagem</span>
+            <h1 class="display hero__title mt-3" id="saudacao">Para onde <em>agora?</em></h1>
+            <p class="hero__lead" id="saudacao-sub"></p>
+          </div>
+        </div>
+
+        <!-- as fotos se alternam, como no protótipo -->
+        <figure class="hero__photo" id="hero-fotos">
+          <figcaption class="tag tag--overlay" id="hero-legenda">Foz do Iguaçu, PR, Brasil</figcaption>
+
+          <!-- A contagem viva sai da foto, não da barra de busca: pousada
+               sobre a imagem e transbordando a borda, ela mostra que a
+               página já está respondendo antes de qualquer clique. É o
+               mesmo número do motor de busca dos resultados. -->
+          <p class="hero__contagem" aria-live="polite">
+            <span class="hero__contagem__pulso" aria-hidden="true"></span>
+            <span><b id="contagem-viva">—</b> destinos combinam com a sua busca agora</span>
+          </p>
+        </figure>
+      </div>
+
+      <!-- A pergunta do produto virou barra segmentada: um campo por
+           resposta, rótulo sempre visível. Antes era uma frase com
+           caixas de seleção embutidas — charmosa, mas escondia onde
+           clicar. Companhia subiu para o terceiro campo; região e clima
+           continuam recolhidos, porque são refinamento. -->
+      <form class="busca" id="quiz">
+        <div class="searchbar">
+          <label class="searchbar__campo">
+            <span class="searchbar__rotulo">Saindo de</span>
+            <select name="origem" aria-label="Cidade de origem"></select>
+          </label>
+          <span class="searchbar__div"></span>
+          <label class="searchbar__campo">
+            <span class="searchbar__rotulo">Tempo de viagem</span>
+            <select name="tempo" aria-label="Tempo máximo de viagem"></select>
+          </label>
+          <span class="searchbar__div"></span>
+          <label class="searchbar__campo">
+            <span class="searchbar__rotulo">Com quem</span>
+            <select name="pessoas" aria-label="Quantidade de pessoas"></select>
+          </label>
+          <button class="btn btn--lg" type="submit">
+            <span id="quiz-cta">Boralá!</span>
+            <span data-icone="busca" data-icone-classe="icon--sm"></span>
+          </button>
+        </div>
+
+        <div class="busca__pe">
+          <details class="quiz__mais">
+            <summary>
+              <span data-icone="filtros" data-icone-classe="icon--sm"></span>
+              <span>Ajustar região e clima</span>
+              <b class="quiz__resumo" id="quiz-resumo"></b>
+            </summary>
+            <div class="quiz__line mt-5">
+              <span>Quero um destino</span>
+              <select class="select select--inline" name="onde" aria-label="Onde"></select>
+              <span>em um clima de</span>
+              <select class="select select--inline" name="clima" aria-label="Clima da viagem"></select>
+            </div>
+          </details>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============== SUGESTÕES AO VIVO ==============
+       A home não espera o clique: ela já responde. Toda mudança no quiz
+       recalcula estes cards com o mesmo motor de busca dos resultados
+       (blFiltrarDestinos), o que mostra de imediato que a origem e o
+       tempo de viagem mudam a recomendação de verdade — e dá para
+       apresentar o produto sem sair da primeira tela.
+       Vale para visitante e para quem entrou: muda só o texto de apoio. -->
+  <section class="section section--sm" id="sugestoes">
+    <div class="container">
+      <div class="secao-topo">
+        <div>
+          <span class="eyebrow">Atualiza enquanto você escolhe</span>
+          <h2 class="mt-3" id="sugestoes-titulo">Para onde dá para ir agora</h2>
+          <p class="body-sm text-secondary mt-2" id="sugestoes-sub">Atualiza conforme você mexe na busca acima.</p>
+        </div>
+        <a class="link body-sm" id="sugestoes-link" href="resultados.html">
+          Ver todos os destinos <span data-icone="seta" data-icone-classe="icon--sm"></span>
+        </a>
+      </div>
+      <div class="grid grid--3" id="sugestoes-lista" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ============== COLEÇÕES ==============
+       Porta de entrada para quem ainda não sabe o que procurar. O rótulo
+       é uma ideia ("praia sem pegar avião"), não um filtro — e cada uma
+       cai nos resultados já com a busca montada. -->
+  <section class="section section--sm">
+    <div class="container">
+      <div class="secao-topo">
+        <div>
+          <h2>Começar por uma ideia</h2>
+          <p class="body-sm text-secondary mt-2">Recortes prontos de quem não sabe ainda para onde quer ir.</p>
+        </div>
+      </div>
+      <!-- auto-fit em vez de 4 colunas fixas: em tela média a coleção
+           vira duas colunas em vez de uma faixa gigante -->
+      <div class="grid grid--auto mt-8">
+        <a class="coll" href="resultados.html?onde=brasil&amp;tipo=praia&amp;tempo=10">
+          <img src="assets/img/maragogi.jpg" alt="" loading="lazy">
+          <span class="coll__texto"><strong>Praia sem pegar avião</strong><span>de carro ou de ônibus</span></span>
+        </a>
+        <a class="coll" href="resultados.html?onde=brasil&amp;tipo=serra">
+          <img src="assets/img/trilha-montanha.jpg" alt="" loading="lazy">
+          <span class="coll__texto"><strong>Serra no inverno</strong><span>para fugir do calor</span></span>
+        </a>
+        <a class="coll" href="resultados.html?origem=saopaulo&amp;tempo=3">
+          <img src="assets/img/bonito.jpg" alt="" loading="lazy">
+          <span class="coll__texto"><strong>Até 3h de São Paulo</strong><span>cabe num fim de semana</span></span>
+        </a>
+        <a class="coll" href="resultados.html?pessoas=4">
+          <img src="assets/img/grupo-trilha.jpg" alt="" loading="lazy">
+          <span class="coll__texto"><strong>Viagem em grupo</strong><span>para quatro ou mais</span></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== COMO FUNCIONA (só para visitante) ==============
+       Página de divulgação: explica o serviço para quem ainda não entrou.
+       v3: eram quatro cards em fileira, com o mesmo peso visual de um
+       destino. Texto de apoio não disputa com o produto: virou três
+       passos separados por fio e número. -->
+  <section class="section section--subtle howto" id="como-funciona" data-se="visitante">
+    <div class="container">
+      <div class="secao-topo">
+        <div>
+          <span class="eyebrow">Como funciona</span>
+          <h2 class="mt-3">Três passos entre a vontade e a viagem</h2>
+        </div>
+        <a class="btn btn--lg" href="#buscar">
+          Descobrir meu destino
+          <span data-icone="seta" data-icone-classe="icon--sm"></span>
+        </a>
+      </div>
+
+      <div class="passos mt-12">
+        <div>
+          <h3>Diga de onde você sai</h3>
+          <p class="body-sm text-secondary mt-2">Origem e tempo de viagem que você aceita. Só isso — o resto é refinamento opcional.</p>
+        </div>
+        <div>
+          <h3>Veja o que combina</h3>
+          <p class="body-sm text-secondary mt-2">A lista muda na hora, com preço médio por pessoa e como se chega em cada destino.</p>
+        </div>
+        <div>
+          <h3>Monte a viagem</h3>
+          <p class="body-sm text-secondary mt-2">Salve, compare e organize com quem vai junto. A reserva você faz onde preferir.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="howto-band" aria-hidden="true">
+      <img src="assets/img/band.jpg" alt="">
+    </div>
+  </section>
+
+  <!-- ============== PÁGINA DE DENTRO (só para quem entrou) ==============
+       No lugar da divulgação entra o que é da pessoa: o que ela salvou,
+       o que combina com ela, a viagem do grupo e o feed. -->
+  <section class="section section--sm" data-se="logado">
+    <div class="container">
+      <!-- "Combinam com você" saiu daqui: as sugestões ao vivo do topo
+           já respondem a mesma pergunta e respondem melhor, porque
+           reagem ao que a pessoa acabou de escolher. -->
+      <div id="area-salvos"></div>
+    </div>
+  </section>
+
+  <section class="section section--sm" data-se="logado">
+    <div class="container">
+      <div class="grid grid--2" id="area-grupos" style="align-items: start"></div>
+    </div>
+  </section>
+
+  <!-- convite discreto: quem já tem conta não precisa de página de vendas -->
+  <section class="section section--sm" data-se="gratuito">
+    <div class="container">
+      <div class="card card--brand-subtle blob-tr upsell">
+        <div class="upsell__copy">
+          <span class="badge badge--premium"><span data-icone="medalha" data-icone-classe="icon--sm"></span> Premium</span>
+          <h3>Vai viajar com outras pessoas?</h3>
+          <p class="body-sm text-secondary">
+            Votem no destino juntos, dividam os custos e acompanhem o checklist no mesmo lugar.
+            Depois da viagem, monte o álbum e compartilhe com quem foi.
+          </p>
+        </div>
+        <div class="upsell__cta">
+          <span class="upsell__price"><span data-preco="anual" data-preco-campo="equivalente"></span><span>/mês</span></span>
+          <a class="btn btn--lg" href="premium.html?origem=home">
+            Ver o que muda
+            <span data-icone="seta" data-icone-classe="icon--sm"></span>
+          </a>
+          <span class="caption text-secondary">no plano anual · ou passe de 30 dias por <span data-preco="passe"></span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== GALERIA ============== -->
+  <section class="section section--sm">
+    <div class="container">
+      <div class="text-center" data-se="visitante">
+        <h2>Lugares para suas memórias acontecerem</h2>
+        <p class="lead mt-4 mx-auto">
+          Hospedagens, restaurantes e passeios conferidos pela nossa curadoria,
+          com a data da última checagem sempre à vista.
+        </p>
+      </div>
+
+      <div class="secao-topo" data-se="logado">
+        <div>
+          <h2>Lugares para a próxima viagem</h2>
+          <p class="body-sm text-secondary mt-2">Uma amostra do que a curadoria conferiu recentemente.</p>
+        </div>
+        <a class="link body-sm" href="resultados.html">Ver todos os destinos <span data-icone="seta" data-icone-classe="icon--sm"></span></a>
+      </div>
+
+      <div class="places mt-12" id="galeria"></div>
+    </div>
+  </section>
+
+  <!-- ============== CURADORIA (só visitante) ==============
+       A prova de confiança estava diluída no FAQ. Aqui ela ganha seção
+       própria — e é o único lugar da home onde o verde aparece, porque
+       é o único lugar onde ele significa alguma coisa. -->
+  <section class="section" data-se="visitante" id="curadoria">
+    <div class="container">
+      <div class="grid grid--2" style="align-items: center">
+        <div class="media media--organic">
+          <img src="assets/img/mapa-camera.jpg" alt="Mapa, caderno de campo e câmera usados pela curadoria" loading="lazy">
+        </div>
+        <div>
+          <span class="eyebrow">Curadoria verificada</span>
+          <h2 class="mt-3">O verde aqui significa uma coisa só: alguém foi conferir</h2>
+          <ul class="plan__list mt-6">
+            <li><span data-icone="check" data-icone-classe="icon--sm"></span><span>Hospedagem, restaurante e passeio checados antes de entrar na lista.</span></li>
+            <li><span data-icone="check" data-icone-classe="icon--sm"></span><span>A data da última checagem fica visível em cada ficha — você sabe o quanto a informação envelheceu.</span></li>
+            <li><span data-icone="check" data-icone-classe="icon--sm"></span><span>O preço médio por pessoa serve para comparar destinos, não como cotação fechada. A gente diz isso na cara.</span></li>
+          </ul>
+          <div class="cluster gap-12 mt-8">
+            <div class="stat"><span class="stat__value">340</span><span class="stat__label">locais verificados</span></div>
+            <div class="stat"><span class="stat__value">7</span><span class="stat__label">cidades de origem</span></div>
+            <div class="stat"><span class="stat__value">90 dias</span><span class="stat__label">intervalo máximo de recheca</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== PREMIUM (página de vendas, só visitante) ==============
+       v3: era uma seção inteira de fundo salmão com dois cards dentro.
+       Virou uma faixa escura única — contraste de superfície em vez de
+       contraste de cor, e o laranja fica só no botão. -->
+  <section class="section section--sm" data-se="visitante">
+    <div class="container">
+      <div class="card card--inverse premium-band">
+        <div>
+          <span class="eyebrow">Premium</span>
+          <h2 class="mt-3">Viajar com gente é bom. Combinar com gente é que é difícil.</h2>
+          <p class="lead mt-4">
+            Votação do destino, rateio dos custos, checklist e álbum da viagem no mesmo
+            lugar — para o grupo parar de decidir no grupo de mensagens.
+          </p>
+          <ul class="plan__list mt-6" id="beneficios-premium"></ul>
+        </div>
+
+        <div class="premium-band__preco">
+          <p class="caption">no plano anual</p>
+          <p class="plan__price mt-2"><span data-preco="anual" data-preco-campo="equivalente"></span><span>/mês</span></p>
+          <p class="body-sm text-secondary mt-1">ou <span data-preco="mensal"></span>/mês no mensal</p>
+          <a class="btn btn--lg btn--block mt-6" href="premium.html#planos">
+            Ver os planos
+            <span data-icone="seta" data-icone-classe="icon--sm"></span>
+          </a>
+          <a class="btn btn--ghost btn--block mt-2" href="premium.html">Ou passe de 30 dias por <span data-preco="passe"></span></a>
+          <p class="caption text-center mt-3">Sem fidelidade. O passe não renova.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== ESTABELECIMENTO ==============
+       Como no Airbnb, o mesmo viajante pode anunciar um local. Quem ainda
+       não anuncia recebe o convite; quem já anuncia vê o atalho do painel. -->
+  <section class="section section--sm" data-se="logado">
+    <div class="container">
+      <div class="card cta-local" data-se="sem-parceiro">
+        <div>
+          <span class="chip chip--outline"><span data-icone="loja" data-icone-classe="icon--sm"></span> Para o seu negócio</span>
+          <h3 class="mt-4">Você tem um hotel, restaurante ou passeio?</h3>
+          <p class="body-sm text-secondary mt-2 measure">
+            Cadastre seu local na mesma conta que você usa para viajar e ele aparece
+            para quem acabou de escolher o destino. Dá para administrar os dois lados
+            trocando de modo no topo da página.
+          </p>
+          <a class="btn mt-6" href="parceiros.html#cadastro">
+            Anunciar meu local
+            <span data-icone="seta" data-icone-classe="icon--sm"></span>
+          </a>
+        </div>
+        <img class="cta-local__foto" src="assets/img/vila-germanica.jpg" alt="Estabelecimento recebendo visitantes">
+      </div>
+
+      <div data-se="parceiro" id="area-meus-locais"></div>
+    </div>
+  </section>
+
+  <!-- ============== DEPOIMENTOS (só visitante) ============== -->
+  <section class="section" data-se="visitante">
+    <div class="container">
+      <div class="quote-wrap">
+        <div class="quote-wrap__people" aria-hidden="true">
+          <img src="assets/img/p1.jpg" alt="">
+          <img src="assets/img/p2.jpg" alt="">
+          <img src="assets/img/p3.jpg" alt="">
+          <img src="assets/img/p4.jpg" alt="">
+          <img src="assets/img/p5.jpg" alt="">
+          <img src="assets/img/p6.jpg" alt="">
+        </div>
+
+        <figure class="quote">
+          <figcaption class="eyebrow">O que nossos viajantes dizem</figcaption>
+          <blockquote class="quote__text" data-quote-texto></blockquote>
+          <p class="body-sm text-secondary" data-quote-autor></p>
+          <div class="quote__dots" data-quote-dots role="tablist" aria-label="Escolher depoimento"></div>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== PERGUNTAS FREQUENTES (só visitante) ============== -->
+  <section class="section section--sm" id="perguntas" data-se="visitante">
+    <div class="container">
+      <h2 class="text-center">Perguntas frequentes</h2>
+      <div class="faq mt-8">
+        <details>
+          <summary>Preciso criar conta para buscar destinos?</summary>
+          <p>Não. A busca e os resultados são abertos. A conta só é necessária para salvar destinos e usar as funcionalidades premium.</p>
+        </details>
+        <details>
+          <summary>De onde vêm as estimativas de preço?</summary>
+          <p>São valores médios por pessoa para o período de noites indicado, considerando hospedagem e passeios. Servem para comparar destinos, não como cotação fechada.</p>
+        </details>
+        <details>
+          <summary>O que significa um destino verificado?</summary>
+          <p>Nossa curadoria confere hospedagens, restaurantes e passeios antes de recomendar, e a data da última checagem fica visível na ficha do local.</p>
+        </details>
+        <details>
+          <summary>Vocês vendem passagem ou pacote?</summary>
+          <p>Não. O Boralá! ajuda na etapa anterior: decidir para onde ir. A reserva você faz onde preferir.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== NEWSLETTER (só visitante) ============== -->
+  <section class="section section--sm" data-se="visitante">
+    <div class="container">
+      <div class="newsletter">
+        <img class="newsletter__bg" src="assets/img/newsletter.jpg" alt="">
+        <h2>Um destino bom por semana, sem enrolação</h2>
+        <p class="mt-3">Dicas de destinos, restaurantes, museus, praias e muito mais!</p>
+        <form class="newsletter__form" id="newsletter">
+          <input type="email" required placeholder="Seu melhor e-mail" aria-label="Seu melhor e-mail">
+          <button type="submit" aria-label="Inscrever na newsletter"><span data-icone="seta"></span></button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div data-footer></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  /* iniciar() já remove os blocos que não são deste estado de conta,
+     então daqui para baixo tudo que pode ter saído do DOM é testado. */
+  BL.iniciar({ nav: "buscar", modo: "viajante" });
+
+  const logado = BL.logado();
+  const prefs = BL.estado().preferencias;
+
+  /* ---------------- quiz ---------------- */
+  const quiz = document.getElementById("quiz");
+  const contagem = document.getElementById("contagem-viva");
+
+  function preencher(nome, opcoes, padrao) {
+    const select = quiz.querySelector('select[name="' + nome + '"]');
+    select.innerHTML = opcoes.map(function (o) {
+      return '<option value="' + o.v + '"' + (o.v === padrao ? " selected" : "") + ">" + o.label + "</option>";
+    }).join("");
+  }
+
+  /* A home aceita os mesmos parâmetros de URL que os resultados, para
+     que um link de demonstração já abra na busca certa. Ordem: o que
+     veio na URL, depois a preferência salva, depois o padrão. */
+  const url = BL.params();
+  function padrao(nome, opcoes, cair) {
+    const vindo = url[nome];
+    const valido = vindo && opcoes.some(function (o) { return o.v === vindo; });
+    preencher(nome, opcoes, valido ? vindo : cair);
+  }
+
+  padrao("pessoas", BL_OPCOES.pessoas, (prefs && prefs.companhia) || "1");
+  padrao("onde", BL_OPCOES.onde, "brasil");
+  padrao("clima", BL_OPCOES.clima, "romance");
+  padrao("origem", BL_ORIGENS, "saopaulo");
+  /* Começa em "até 6h" porque é o recorte que o produto defende e que
+     agora tem catálogo para sustentar — nas sete origens há destino a
+     até 3h. "Tanto faz" continua na lista para quem quer avião. */
+  padrao("tempo", BL_TEMPOS, "6");
+
+  function buscaAtual() {
+    const d = new FormData(quiz);
+    return {
+      pessoas: d.get("pessoas"), onde: d.get("onde"), clima: d.get("clima"),
+      origem: d.get("origem"), tempo: d.get("tempo")
+    };
+  }
+
+  function rotulo(lista, valor) {
+    const achou = lista.filter(function (o) { return o.v === valor; })[0];
+    return achou ? achou.label : valor;
+  }
+
+  /* ---------------- sugestões ao vivo ----------------
+     Mesma função que os resultados usam, mesmo contrato: o que aparece
+     aqui é o que vai aparecer depois do clique, sem segunda regra. */
+  const elSug = document.getElementById("sugestoes-lista");
+  const elSugTitulo = document.getElementById("sugestoes-titulo");
+  const elSugSub = document.getElementById("sugestoes-sub");
+  const elSugLink = document.getElementById("sugestoes-link");
+  const elResumo = document.getElementById("quiz-resumo");
+  const elCta = document.getElementById("quiz-cta");
+  const QUANTAS = 3;
+
+  function atualizar() {
+    const busca = buscaAtual();
+    const lista = blFiltrarDestinos(busca, {});
+    const origem = rotulo(BL_ORIGENS, busca.origem);
+    const tempo = BL_TEMPOS.filter(function (t) { return t.v === busca.tempo; })[0];
+
+    contagem.textContent = lista.length;
+    if (elCta) elCta.textContent = lista.length ? "Boralá!" : "Ajustar a busca";
+
+    /* o resumo no fecho do bloco recolhido evita a pessoa abrir só para
+       conferir o que está selecionado lá dentro */
+    if (elResumo) {
+      /* companhia subiu para a barra de busca; aqui fica só o que
+         está recolhido dentro do próprio bloco */
+      elResumo.textContent = rotulo(BL_OPCOES.onde, busca.onde) +
+        " · clima de " + rotulo(BL_OPCOES.clima, busca.clima);
+    }
+
+    if (!elSug) return;
+
+    const query = new URLSearchParams(busca).toString();
+    elSugLink.href = "resultados.html?" + query;
+    elSugTitulo.textContent = "Saindo de " + origem.split(",")[0] +
+      (tempo && tempo.max !== Infinity ? ", " + tempo.curto : "");
+
+    if (!lista.length) {
+      /* O estado vazio é honesto e acionável: diz quantos destinos
+         voltariam sem o limite de tempo e tira o limite num clique. */
+      const semTempo = blFiltrarDestinos(Object.assign({}, busca, { tempo: "tudo" }), {}).length;
+      elSugSub.textContent = "Nenhum destino do catálogo cabe neste limite de tempo.";
+      elSugLink.textContent = "";
+      elSug.innerHTML =
+        '<div class="empty" style="grid-column: 1 / -1">' +
+          '<span class="icon-tile">' + BL.icone("relogio", "icon--lg") + "</span>" +
+          "<h3>Nada a " + (tempo ? tempo.curto : "esta distância") + " de " + origem.split(",")[0] + "</h3>" +
+          '<p class="text-secondary measure">Sem o limite de tempo, ' + semTempo +
+            (semTempo === 1 ? " destino aparece" : " destinos aparecem") + " nesta busca.</p>" +
+          '<button class="btn" type="button" id="sugestoes-soltar">Aceitar qualquer distância</button>' +
+        "</div>";
+      const soltar = document.getElementById("sugestoes-soltar");
+      if (soltar) soltar.addEventListener("click", function () {
+        quiz.querySelector('select[name="tempo"]').value = "tudo";
+        atualizar();
+      });
+      return;
+    }
+
+    elSugSub.textContent = lista.length + (lista.length === 1 ? " destino combina" : " destinos combinam") +
+      " com esta busca. Mostrando os " + Math.min(QUANTAS, lista.length) + " de melhor match." +
+      (prefs ? " Suas preferências salvas já entram na conta." : "");
+    elSugLink.innerHTML = "Ver todos os " + lista.length + " " + BL.icone("seta", "icon--sm");
+
+    elSug.innerHTML = lista.slice(0, QUANTAS).map(function (d) {
+      return BL.cardDestino(d, { origem: busca.origem });
+    }).join("");
+    BL.ligarSalvar(elSug);
+  }
+
+  quiz.addEventListener("change", atualizar);
+  atualizar();
+
+  quiz.addEventListener("submit", function (e) {
+    e.preventDefault();
+    location.href = "resultados.html?" + new URLSearchParams(buscaAtual()).toString();
+  });
+
+  /* ---------------- saudação ---------------- */
+  const elSaudacao = document.getElementById("saudacao");
+  if (elSaudacao && logado) {
+    const u = BL.estado().usuario;
+    elSaudacao.textContent = "Olá, " + u.nome.split(" ")[0] + ". Para onde agora?";
+    document.getElementById("saudacao-sub").textContent = prefs
+      ? "A busca já começa pelas suas preferências salvas. Mude o que quiser e veja os destinos."
+      : "Monte a busca abaixo ou continue de onde você parou.";
+  }
+
+  /* ---------------- fotos do hero ---------------- */
+  const FOTOS = [
+    { src: "assets/img/foz.jpg", legenda: "Foz do Iguaçu, PR, Brasil" },
+    { src: "assets/img/paris.jpg", legenda: "Paris, França" },
+    { src: "assets/img/rio.jpg", legenda: "Rio de Janeiro, RJ, Brasil" },
+    { src: "assets/img/banff.jpg", legenda: "Banff, AB, Canadá" },
+    { src: "assets/img/blumenau-centro.jpg", legenda: "Blumenau, SC, Brasil" },
+    { src: "assets/img/buenavista.jpg", legenda: "Buena Vista, VA, Estados Unidos" }
+  ];
+  const palco = document.getElementById("hero-fotos");
+  const legenda = document.getElementById("hero-legenda");
+
+  FOTOS.forEach(function (f, i) {
+    const img = BL.el('<img src="' + f.src + '" alt="' + f.legenda + '" class="' + (i === 0 ? "is-on" : "") + '">');
+    palco.insertBefore(img, legenda);
+  });
+
+  const semMovimento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!semMovimento) {
+    let atual = 0;
+    const fotos = BL.$$("#hero-fotos img");
+    setInterval(function () {
+      fotos[atual].classList.remove("is-on");
+      atual = (atual + 1) % fotos.length;
+      fotos[atual].classList.add("is-on");
+      legenda.textContent = FOTOS[atual].legenda;
+    }, 4500);
+  }
+
+  /* ---------------- salvos ---------------- */
+  const areaSalvos = document.getElementById("area-salvos");
+  if (areaSalvos) {
+    const ids = BL.estado().salvos;
+
+    if (!ids.length) {
+      areaSalvos.innerHTML =
+        '<div class="card card--flat cta-local">' +
+          "<div><h2>Comece guardando o que te interessa</h2>" +
+          '<p class="body-sm text-secondary mt-2 measure">Toque no coração de qualquer destino e ele fica aqui, esperando a decisão. Dá para comparar preço, época e o que a curadoria conferiu.</p>' +
+          '<a class="btn mt-6" href="resultados.html">Boralá! ' + BL.icone("seta", "icon--sm") + "</a></div>" +
+          '<img class="cta-local__foto" src="assets/img/planejamento.jpg" alt="">' +
+        "</div>";
+    } else {
+      const lista = ids.slice(0, 3).map(function (id) {
+        const d = blBuscarDestino(id);
+        if (!d) return "";
+        const copia = Object.assign({}, d, { match: blCalcularMatch(d, {}) });
+        return BL.cardDestino(copia);
+      }).join("");
+
+      areaSalvos.innerHTML =
+        '<div class="secao-topo"><div>' +
+          "<h2>Continue de onde parou</h2>" +
+          '<p class="body-sm text-secondary mt-2">' + ids.length +
+            (ids.length === 1 ? " destino salvo" : " destinos salvos") + " na sua lista.</p>" +
+        "</div>" +
+        '<a class="link body-sm strong" href="conta.html#salvos">Ver todos ' + BL.icone("seta", "icon--sm") + "</a></div>" +
+        '<div class="grid grid--3">' + lista + "</div>";
+      BL.ligarSalvar(areaSalvos);
+    }
+  }
+
+  /* ---------------- viagem do grupo + feed ---------------- */
+  const areaGrupos = document.getElementById("area-grupos");
+  if (areaGrupos) {
+    const viagem = (typeof BL_VIAGENS !== "undefined" && BL_VIAGENS.length) ? BL_VIAGENS[0] : BL_VIAGEM;
+    const votados = (viagem.candidatos || []).map(function (c) {
+      const d = blBuscarDestino(c.destinoId);
+      return { nome: d ? d.nome : c.destinoId, votos: c.votos };
+    }).sort(function (a, b) { return b.votos - a.votos; });
+    const totalVotos = votados.reduce(function (s, c) { return s + c.votos; }, 0) || 1;
+
+    const cardViagem =
+      '<div class="card blob-tl">' +
+        '<div class="secao-topo"><div>' +
+          "<h3>Viagem do grupo</h3>" +
+          '<p class="body-sm text-secondary mt-2">' + viagem.nome + " · " + viagem.periodo + "</p>" +
+        "</div>" +
+        '<div class="avatar-stack">' + (viagem.membros || []).slice(0, 4).map(function (m) {
+          return '<img class="avatar avatar--sm" src="' + m.avatar + '" alt="' + m.nome + '">';
+        }).join("") + "</div></div>" +
+        '<div class="stack gap-4 mt-6">' + votados.map(function (v) {
+          const pct = Math.round((v.votos / totalVotos) * 100);
+          return "<div><div class=\"cluster between\"><span class=\"body-sm\">" + v.nome + "</span>" +
+            '<strong class="body-sm">' + v.votos + (v.votos === 1 ? " voto" : " votos") + "</strong></div>" +
+            '<div class="meter"><span class="meter__fill" style="width:' + pct + '%"></span></div></div>';
+        }).join("") + "</div>" +
+        '<a class="btn btn--outline mt-8" href="viagens.html">Abrir viagens coletivas ' + BL.icone("seta", "icon--sm") + "</a>" +
+      "</div>";
+
+    const posts = BL_FEED.slice(0, 2).map(function (post) {
+      return '<a class="vcard" href="album.html">' +
+        '<img class="vcard__thumb" src="' + post.foto + '" alt="">' +
+        '<div class="vcard__body">' +
+          '<strong class="body-sm">' + post.autor + "</strong>" +
+          '<span class="caption text-secondary">' + post.destino + "</span>" +
+          '<span class="body-sm text-secondary">' + post.texto.slice(0, 90) + "…</span>" +
+        "</div>" +
+        '<span class="vcard__seta">' + BL.icone("seta", "icon--sm") + "</span>" +
+      "</a>";
+    }).join("");
+
+    const cardFeed =
+      '<div class="card">' +
+        '<div class="secao-topo"><div>' +
+          "<h3>Do feed dos viajantes</h3>" +
+          '<p class="body-sm text-secondary mt-2">Relatos de quem voltou de viagem esta semana.</p>' +
+        "</div></div>" +
+        '<div class="stack gap-4 mt-6">' + posts + "</div>" +
+        '<a class="btn btn--outline mt-8" href="album.html">Ver o feed e meus álbuns ' + BL.icone("seta", "icon--sm") + "</a>" +
+      "</div>";
+
+    areaGrupos.innerHTML = cardViagem + cardFeed;
+  }
+
+  /* ---------------- meus locais (papel de estabelecimento) ---------------- */
+  const areaLocais = document.getElementById("area-meus-locais");
+  if (areaLocais) {
+    const meus = BL.locais();
+    areaLocais.innerHTML =
+      '<div class="secao-topo"><div>' +
+        "<h2>Seus locais no Boralá!</h2>" +
+        '<p class="body-sm text-secondary mt-2">Você administra ' + meus.length +
+          (meus.length === 1 ? " estabelecimento" : " estabelecimentos") + " nesta mesma conta.</p>" +
+      "</div>" +
+      '<button class="btn" type="button" data-ir-painel>Abrir painel do estabelecimento ' + BL.icone("seta", "icon--sm") + "</button></div>" +
+      '<div class="stack gap-3">' + meus.map(function (l) {
+        return '<div class="localrow">' +
+          '<span class="localrow__tile">' + BL.icone("loja") + "</span>" +
+          '<span class="localrow__id"><strong class="body-sm">' + l.nome + "</strong>" +
+            '<span class="caption text-secondary">' + l.categoria + " · " + l.cidade + "</span></span>" +
+          (l.status === "ativo"
+            ? '<span class="badge">' + BL.icone("check-circulo", "icon--sm") + "No ar</span>"
+            : '<span class="badge" style="color: var(--text-secondary)">' + BL.icone("pino", "icon--sm") + "Em curadoria</span>") +
+        "</div>";
+      }).join("") + "</div>";
+
+    const irPainel = BL.$("[data-ir-painel]", areaLocais);
+    if (irPainel) {
+      irPainel.addEventListener("click", function () {
+        BL.definirModo("estabelecimento");
+        location.href = "parceiros-painel.html";
+      });
+    }
+  }
+
+  /* ---------------- galeria ---------------- */
+  /* a ordem define o mosaico: Curitiba é o tile alto do meio */
+  const galeria = document.getElementById("galeria");
+  ["maragogi", "curitiba", "bonito", "blumenau", "saopaulo", "noronha"].forEach(function (id) {
+    const d = blBuscarDestino(id);
+    galeria.insertAdjacentHTML("beforeend",
+      '<a class="places__item" href="destino.html?id=' + d.id + '">' +
+        '<img src="' + d.img + '" alt="' + d.nome + ", " + d.uf + '" loading="lazy">' +
+        '<span class="tag tag--overlay">' + d.nome + ", " + d.sigla + ", " + d.pais + "</span>" +
+      "</a>");
+  });
+
+  /* ---------------- benefícios premium (bloco de visitante) ---------------- */
+  const listaBeneficios = document.getElementById("beneficios-premium");
+  if (listaBeneficios) {
+    /* Sai de BL_FUNCIONALIDADES para a home nunca mais prometer como
+       premium algo que mudou de lado. */
+    listaBeneficios.innerHTML = blFuncionalidades("premium").map(function (f) {
+      return f.titulo;
+    }).map(function (b) {
+      return "<li>" + BL.icone("check", "icon--sm") + "<span>" + b + "</span></li>";
+    }).join("");
+  }
+
+  /* ---------------- depoimentos (bloco de visitante) ---------------- */
+  const elTexto = document.querySelector("[data-quote-texto]");
+  if (elTexto) {
+    const DEPOIMENTOS = [
+      { texto: "“Visitei um restaurante italiano em Rio do Sul/SC por recomendação do Boralá!. Foi inesquecível!”", autor: "— Julieta, PR, Brasil" },
+      { texto: "“Passei a noite num hotel verificado pelo Boralá!. Só satisfação!!! Café da manhã maravilhoso!”", autor: "— Cacau, SC, Brasil" },
+      { texto: "“Fomos num hotel beira-mar, era aconchegante. Depois fomos a um museu e restaurante próximos. Perfeito!”", autor: "— Gregório, BA, Brasil" }
+    ];
+    const elAutor = document.querySelector("[data-quote-autor]");
+    const elDots = document.querySelector("[data-quote-dots]");
+    let indice = 0;
+    let timer = null;
+
+    function mostrar(i) {
+      indice = i;
+      elTexto.textContent = DEPOIMENTOS[i].texto;
+      elAutor.textContent = DEPOIMENTOS[i].autor;
+      Array.prototype.forEach.call(elDots.children, function (d, idx) {
+        d.setAttribute("aria-current", idx === i);
+      });
+    }
+
+    function parar() { if (timer) { clearInterval(timer); timer = null; } }
+
+    DEPOIMENTOS.forEach(function (_, i) {
+      const b = BL.el('<button class="quote__dot" type="button" aria-label="Depoimento ' + (i + 1) + ' de ' + DEPOIMENTOS.length + '"></button>');
+      b.addEventListener("click", function () { mostrar(i); parar(); });
+      elDots.appendChild(b);
+    });
+    mostrar(0);
+
+    /* a rotação pausa ao interagir e não roda para quem pediu menos movimento */
+    if (!semMovimento) {
+      timer = setInterval(function () { mostrar((indice + 1) % DEPOIMENTOS.length); }, 7000);
+      elDots.addEventListener("mouseenter", parar);
+      elDots.addEventListener("focusin", parar);
+    }
+  }
+
+  /* ---------------- newsletter (bloco de visitante) ---------------- */
+  const formNews = document.getElementById("newsletter");
+  if (formNews) {
+    formNews.addEventListener("submit", function (e) {
+      e.preventDefault();
+      e.target.reset();
+      BL.toast("Pronto! Você vai receber nossas dicas por e-mail.", "sucesso");
+    });
+  }
+})();
+</script>
+</body>
+</html>

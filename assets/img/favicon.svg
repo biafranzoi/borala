@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Boralá!">
+  <!-- Monograma da marca denominativa: a inicial em caixa baixa e o ponto
+       laranja, que é o único elemento gráfico que o logo tem. A mesma
+       lógica do wordmark — texto em tinta, ponto em laranja — só que
+       reduzida ao que sobrevive a 16px.
+       A letra é desenhada em formas, não em fonte: favicon não carrega
+       webfont, e com font-family cada sistema entregaria um "b" diferente. -->
+  <rect width="32" height="32" rx="7" fill="#1a1511"/>
+
+  <!-- haste com a serifa de bandeira da ascendente, como no Fraunces -->
+  <path d="M7.9 6.2 10.3 4.9 12.1 5.4 12.1 25.2 8.7 25.2Z" fill="#fbf7f2"/>
+  <!-- bojo: anel grosso que encosta na haste e fecha o "b" -->
+  <circle cx="16.4" cy="18.4" r="5.2" fill="none" stroke="#fbf7f2" stroke-width="3.6"/>
+
+  <!-- o ponto, na altura em que ele fica no logo: acima da altura de x -->
+  <circle cx="24.6" cy="10.4" r="3" fill="#dd3400"/>
+</svg>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Minha conta — Boralá!</title>
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/design-system.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<div data-header></div>
+
+<main>
+  <section class="hero hero--sm">
+    <img class="hero__bg" src="assets/img/band.jpg" alt="">
+    <div class="container hero__inner">
+      <div class="cluster gap-6" id="perfil"></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <!-- a conta gratuita vê primeiro o que é dela; o que é premium vem depois -->
+      <div class="tabs" id="abas">
+        <button class="tabs__tab" role="tab" aria-selected="true" type="button" data-aba="salvos">Destinos salvos</button>
+        <button class="tabs__tab" role="tab" aria-selected="false" type="button" data-aba="preferencias">Preferências de viagem</button>
+        <button class="tabs__tab" role="tab" aria-selected="false" type="button" data-aba="dados">Dados da conta</button>
+        <button class="tabs__tab" role="tab" aria-selected="false" type="button" data-aba="assinatura">Assinatura</button>
+      </div>
+
+      <!-- salvos -->
+      <div class="tabpanel is-active" data-painel="salvos" id="painel-salvos"></div>
+
+      <!-- preferências avançadas (premium) -->
+      <div class="tabpanel" data-painel="preferencias" id="painel-preferencias"></div>
+
+      <!-- dados da conta -->
+      <div class="tabpanel" data-painel="dados" id="painel-dados"></div>
+
+      <!-- assinatura -->
+      <div class="tabpanel" data-painel="assinatura" id="painel-assinatura"></div>
+    </div>
+  </section>
+</main>
+
+<div data-footer></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  /* A aba aberta define o item do menu em destaque: "Salvos" é um item do
+     menu de quem está logado e aponta para cá. */
+  const abaInicial = (location.hash || "").slice(1);
+  if (BL.iniciar({ nav: abaInicial === "salvos" ? "salvos" : "", exigeLogin: true, modo: "viajante" }) === false) return;
+
+  const u = BL.estado().usuario;
+  const ehPremium = BL.premium();
+
+  /* ---------- perfil ---------- */
+  document.getElementById("perfil").innerHTML =
+    '<img class="avatar avatar--xl" src="' + u.avatar + '" alt="">' +
+    "<div><h1>" + u.nome + '</h1><p class="hero__lead">' + u.email + "</p></div>" +
+    '<span class="grow"></span>' +
+    (ehPremium
+      ? '<span class="badge badge--premium">' + BL.icone("medalha", "icon--sm") + "Assinante premium</span>"
+      : '<a class="btn btn--inverse" href="premium.html">Seja premium ' + BL.icone("seta", "icon--sm") + "</a>");
+
+  /* ---------- preferências avançadas ---------- */
+  const prefs = BL.estado().preferencias || {
+    orcamento: 2500, ritmo: "equilibrado", companhia: "2",
+    transporte: ["aviao"], restricoes: [], acessibilidade: false, evitar: []
+  };
+
+  function grupoChips(nome, opcoes, selecionados, multiplo) {
+    return '<div class="cluster gap-2" data-grupo="' + nome + '" data-multiplo="' + (multiplo ? "1" : "0") + '">' +
+      opcoes.map(function (o) {
+        const ativo = multiplo ? selecionados.indexOf(o.v) !== -1 : selecionados === o.v;
+        return '<button class="chip ' + (ativo ? "is-selected" : "") + '" type="button" data-valor="' + o.v + '">' + o.label + "</button>";
+      }).join("") + "</div>";
+  }
+
+  document.getElementById("painel-preferencias").innerHTML =
+    '<div class="grid grid--aside">' +
+      /* Era um bloco data-premium. Virou grátis: é a preferência que faz a
+         busca ficar boa, e cobrar por ela escondia a prova de valor. */
+      "<div>" +
+        '<div class="card">' +
+          "<h3>Como você gosta de viajar</h3>" +
+          '<p class="body-sm text-secondary mt-2">Usamos estas preferências para ordenar os resultados antes mesmo de você aplicar filtros.</p>' +
+
+          '<div class="stack gap-3 mt-8">' +
+            '<label class="caption strong text-secondary" for="orcamento">Orçamento médio por viagem (por pessoa)</label>' +
+            '<input type="range" id="orcamento" min="500" max="12000" step="100" value="' + prefs.orcamento + '" style="accent-color: var(--c-brand-600)">' +
+            '<strong id="orcamento-valor">' + BL.dinheiro(prefs.orcamento) + "</strong>" +
+          "</div>" +
+
+          '<div class="stack gap-3 mt-8"><span class="caption strong text-secondary">Ritmo da viagem</span>' +
+            grupoChips("ritmo", [
+              { v: "tranquilo", label: "Tranquilo" },
+              { v: "equilibrado", label: "Equilibrado" },
+              { v: "intenso", label: "Intenso" }
+            ], prefs.ritmo, false) + "</div>" +
+
+          '<div class="stack gap-3 mt-8"><span class="caption strong text-secondary">Companhia mais frequente</span>' +
+            grupoChips("companhia", BL_OPCOES.pessoas, prefs.companhia, false) + "</div>" +
+
+          '<div class="stack gap-3 mt-8"><span class="caption strong text-secondary">Transporte preferido</span>' +
+            grupoChips("transporte", [
+              { v: "aviao", label: "Avião" },
+              { v: "onibus", label: "Ônibus" },
+              { v: "carro", label: "Carro próprio" }
+            ], prefs.transporte, true) + "</div>" +
+
+          '<div class="stack gap-3 mt-8"><span class="caption strong text-secondary">Restrições alimentares</span>' +
+            grupoChips("restricoes", [
+              { v: "vegetariano", label: "Vegetariano" },
+              { v: "vegano", label: "Vegano" },
+              { v: "semgluten", label: "Sem glúten" },
+              { v: "semlactose", label: "Sem lactose" }
+            ], prefs.restricoes, true) + "</div>" +
+
+          '<div class="stack gap-3 mt-8"><span class="caption strong text-secondary">Prefiro evitar</span>' +
+            grupoChips("evitar", [
+              { v: "multidoes", label: "Multidões" },
+              { v: "frio", label: "Frio intenso" },
+              { v: "estradas", label: "Estradas longas" },
+              { v: "balada", label: "Vida noturna agitada" }
+            ], prefs.evitar, true) + "</div>" +
+
+          '<div class="mt-8"><label class="switch"><input type="checkbox" id="acessibilidade"' + (prefs.acessibilidade ? " checked" : "") + ">" +
+            '<span class="switch__track"></span><span>Priorizar destinos e locais com acessibilidade</span></label></div>' +
+
+          '<div class="mt-8"><button class="btn btn--lg" type="button" id="salvar-prefs">Salvar preferências</button></div>' +
+        "</div>" +
+      "</div>" +
+
+      '<aside class="card card--brand-subtle blob-tr">' +
+        "<h4>O que muda com isso</h4>" +
+        '<ul class="plan__list mt-4">' +
+          ["Resultados já ordenados pelo seu orçamento", "Destinos fora do seu ritmo ficam no fim da lista", "Sugestões de restaurantes respeitam suas restrições", "Avisos quando a viagem exigir estrada longa"]
+            .map(function (t) { return "<li>" + BL.icone("check", "icon--sm") + "<span>" + t + "</span></li>"; }).join("") +
+        "</ul></aside>" +
+    "</div>";
+
+  /* ---------- salvos ---------- */
+  function renderSalvos() {
+    const ids = BL.estado().salvos;
+    const painel = document.getElementById("painel-salvos");
+    if (!ids.length) {
+      painel.innerHTML =
+        '<div class="empty">' +
+          '<span class="icon-tile">' + BL.icone("coracao", "icon--lg") + "</span>" +
+          "<h3>Nenhum destino salvo ainda</h3>" +
+          '<p class="text-secondary measure">Toque no coração dos cards de destino para guardar aqui as opções que você está considerando.</p>' +
+          '<a class="btn" href="resultados.html">Boralá!</a>' +
+        "</div>";
+      return;
+    }
+    painel.innerHTML = '<div class="grid grid--3">' + ids.map(function (id) {
+      const d = blBuscarDestino(id);
+      if (!d) return "";
+      const copia = Object.assign({}, d);
+      copia.match = blCalcularMatch(d, {});
+      return BL.cardDestino(copia);
+    }).join("") + "</div>";
+    BL.ligarSalvar(painel);
+    BL.$$("[data-salvar]", painel).forEach(function (b) {
+      b.addEventListener("click", function () { setTimeout(renderSalvos, 100); });
+    });
+  }
+  renderSalvos();
+
+  /* ---------- o outro papel da mesma conta ---------- */
+  /* A conta é uma só: quem viaja pode anunciar um local, e é daqui que a
+     pessoa chega nos dois lados. */
+  function cardEstabelecimento() {
+    const meus = BL.locais();
+    if (!meus.length) {
+      return '<div class="card card--flat">' +
+        "<h4>Anunciar um local</h4>" +
+        '<p class="body-sm text-secondary mt-3">Tem um hotel, restaurante ou passeio? Ele fica nesta mesma conta e você troca de papel no topo do site.</p>' +
+        '<a class="btn btn--outline mt-4" href="parceiros.html#cadastro">Cadastrar meu local</a>' +
+      "</div>";
+    }
+    return '<div class="card card--flat">' +
+      "<h4>Meus locais</h4>" +
+      '<p class="body-sm text-secondary mt-3">Você administra ' + meus.length +
+        (meus.length === 1 ? " estabelecimento" : " estabelecimentos") + " nesta conta.</p>" +
+      '<ul class="plan__list mt-4">' + meus.map(function (l) {
+        return "<li>" + BL.icone("loja", "icon--sm") + "<span>" + l.nome + " · " + l.cidade + "</span></li>";
+      }).join("") + "</ul>" +
+      '<button class="btn btn--outline mt-4" type="button" id="btn-painel-local">Abrir painel do estabelecimento</button>' +
+    "</div>";
+  }
+
+  /* ---------- dados da conta ---------- */
+  document.getElementById("painel-dados").innerHTML =
+    '<div class="grid grid--aside-sm">' +
+      '<div class="card">' +
+        "<h3>Dados da conta</h3>" +
+        '<p class="body-sm text-secondary mt-2">Estas informações aparecem no seu perfil e nas avaliações que você publica.</p>' +
+
+        '<form class="stack gap-6 mt-8" id="form-dados">' +
+          '<div class="field">' +
+            '<label class="field__label" for="dados-nome">Nome</label>' +
+            '<input class="input" id="dados-nome" value="' + u.nome + '" required>' +
+          "</div>" +
+          '<div class="field">' +
+            '<label class="field__label" for="dados-email">E-mail</label>' +
+            '<input class="input" id="dados-email" type="email" value="' + u.email + '" required>' +
+            '<span class="field__hint">Usamos para avisos de viagem e recuperação de senha.</span>' +
+          "</div>" +
+          '<div><button class="btn" type="submit">Salvar alterações</button></div>' +
+        "</form>" +
+
+        '<hr class="divider mt-8">' +
+
+        '<form class="stack gap-6 mt-8" id="form-senha">' +
+          '<h4 class="title-md">Alterar senha</h4>' +
+          '<div class="field">' +
+            '<label class="field__label" for="senha-atual">Senha atual</label>' +
+            '<input class="input" id="senha-atual" type="password" placeholder="••••••••" autocomplete="off">' +
+          "</div>" +
+          '<div class="field">' +
+            '<label class="field__label" for="senha-nova">Nova senha</label>' +
+            '<input class="input" id="senha-nova" type="password" placeholder="mínimo de 6 caracteres" autocomplete="off">' +
+          "</div>" +
+          '<div><button class="btn btn--outline" type="submit">Atualizar senha</button></div>' +
+        "</form>" +
+      "</div>" +
+
+      '<aside class="stack gap-4">' +
+        '<div class="card card--brand-subtle blob-tr">' +
+          "<h4>Privacidade</h4>" +
+          '<p class="body-sm mt-3">Este é um protótipo sem servidor: o que você digita fica só na memória deste navegador e some quando você clica em "recomeçar" na barra do topo.</p>' +
+        "</div>" +
+        cardEstabelecimento() +
+        '<div class="card card--flat">' +
+          "<h4>Encerrar conta</h4>" +
+          '<p class="body-sm text-secondary mt-3">Sair remove seus dados deste navegador, incluindo destinos salvos.</p>' +
+          '<button class="btn btn--ghost mt-4" type="button" id="btn-sair-conta">Sair da conta</button>' +
+        "</div>" +
+      "</aside>" +
+    "</div>";
+
+  document.getElementById("form-dados").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const nome = document.getElementById("dados-nome").value.trim();
+    const email = document.getElementById("dados-email").value.trim();
+    if (!nome || !email) { BL.toast("Preencha nome e e-mail."); return; }
+    BL.atualizarUsuario({ nome: nome, email: email });
+    document.querySelector("#perfil h1").textContent = nome;
+    document.querySelector("#perfil .hero__lead").textContent = email;
+    BL.toast("Dados atualizados.", "sucesso");
+  });
+
+  document.getElementById("form-senha").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const nova = document.getElementById("senha-nova").value;
+    if (nova.length < 6) { BL.toast("A nova senha precisa de pelo menos 6 caracteres."); return; }
+    e.target.reset();
+    BL.toast("Senha atualizada.", "sucesso");
+  });
+
+  const btnPainelLocal = document.getElementById("btn-painel-local");
+  if (btnPainelLocal) {
+    btnPainelLocal.addEventListener("click", function () {
+      BL.definirModo("estabelecimento");
+      location.href = "parceiros-painel.html";
+    });
+  }
+
+  document.getElementById("btn-sair-conta").addEventListener("click", function () {
+    BL.sair();
+    BL.toast("Você saiu da conta.");
+    setTimeout(function () { location.href = "index.html"; }, 600);
+  });
+
+  /* ---------- assinatura ---------- */
+  /* O plano, a validade e o que muda no fim do período saem do estado:
+     passe e assinatura terminam de formas diferentes e a tela precisa
+     dizer qual é o caso, senão o passe parece uma cobrança recorrente. */
+  const planoAtual = BL.planoDoViajante();
+  const diasRestantes = BL.diasRestantes();
+  const renova = !!(BL.assinatura() && BL.assinatura().renova);
+
+  document.getElementById("painel-assinatura").innerHTML = ehPremium
+    ? '<div class="grid grid--2">' +
+        '<div class="card blob-tl">' +
+          '<span class="badge badge--premium">' + BL.icone("medalha", "icon--sm") +
+            (planoAtual ? planoAtual.nome : "Premium") + "</span>" +
+          '<h3 class="mt-4">' + (planoAtual ? BL.dinheiro(planoAtual.preco, planoAtual.preco % 1 !== 0) : "") +
+            ' <span class="body-sm text-secondary">/' + (planoAtual ? planoAtual.ciclo : "mês") + "</span></h3>" +
+          (planoAtual && planoAtual.equivalente
+            ? '<p class="caption text-brand strong">equivale a ' + BL.dinheiro(planoAtual.equivalente, true) + "/mês</p>"
+            : "") +
+          '<p class="body-sm text-secondary mt-2">' +
+            (renova
+              ? "Renova em " + diasRestantes + " dias. Sem fidelidade."
+              : "Termina em " + diasRestantes + " dias e não renova — você não precisa cancelar nada.") + "</p>" +
+          '<ul class="plan__list mt-6">' +
+            blFuncionalidades("premium").map(function (f) {
+              return "<li>" + BL.icone("check", "icon--sm") + "<span>" + f.titulo + "</span></li>";
+            }).join("") +
+          "</ul>" +
+          '<div class="cluster gap-3 mt-8">' +
+            (renova
+              ? '<button class="btn btn--outline" type="button" id="btn-cancelar">Cancelar assinatura</button>'
+              : '<a class="btn btn--outline" href="premium.html#planos">Virar assinatura</a>') +
+            '<a class="link body-sm strong" href="premium.html#planos">Trocar de plano</a>' +
+          "</div>" +
+        "</div>" +
+        '<div class="card card--flat">' +
+          "<h4>Histórico de cobranças</h4>" +
+          '<div class="stack gap-4 mt-6">' +
+            '<div class="cluster between"><div><strong class="body-sm">' +
+              (renova ? "Período de teste" : (planoAtual ? planoAtual.nome : "Passe")) +
+              '</strong><p class="caption text-secondary">iniciado hoje</p></div><strong class="body-sm" style="color: var(--action-success)">' +
+              (renova ? "R$ 0,00" : BL.dinheiro(planoAtual ? planoAtual.preco : 0, true)) + "</strong></div>" +
+            '<hr class="divider">' +
+            '<p class="caption text-secondary">As próximas cobranças aparecerão aqui. Neste protótipo nada é cobrado de verdade.</p>' +
+          "</div>" +
+        "</div>" +
+      "</div>"
+    : '<div class="card card--brand-subtle blob-br text-center">' +
+        "<h3>Você está no plano gratuito</h3>" +
+        '<p class="text-secondary mt-2 measure mx-auto">Com o Premium você organiza a viagem com quem vai junto, monta o álbum ' +
+          'depois, lê as avaliações de quem já foi e é avisado quando o preço cair.</p>' +
+        '<div class="cluster gap-3 center mt-6">' +
+          '<a class="btn btn--lg" href="checkout.html?plano=passe">Passe de 30 dias por ' +
+            '<span data-preco="passe"></span> ' + BL.icone("seta", "icon--sm") + "</a>" +
+          '<a class="btn btn--outline btn--lg" href="premium.html#planos">Ver todos os planos</a>' +
+        "</div>" +
+      "</div>";
+
+  /* os cards acima nascem depois do boot, então o preço é preenchido aqui */
+  BL.preencherPrecos(document.getElementById("painel-assinatura"));
+
+  const btnCancelar = document.getElementById("btn-cancelar");
+  if (btnCancelar) {
+    btnCancelar.addEventListener("click", function () {
+      BL.cancelarAssinatura();
+      BL.toast("Assinatura cancelada.");
+      setTimeout(function () { location.reload(); }, 800);
+    });
+  }
+
+  /* ---------- interações ---------- */
+  BL.aplicarBloqueios();
+
+  const slider = document.getElementById("orcamento");
+  if (slider) {
+    slider.addEventListener("input", function () {
+      document.getElementById("orcamento-valor").textContent = BL.dinheiro(Number(slider.value));
+    });
+  }
+
+  BL.$$("[data-grupo]").forEach(function (grupo) {
+    const multiplo = grupo.dataset.multiplo === "1";
+    BL.$$(".chip", grupo).forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        if (multiplo) chip.classList.toggle("is-selected");
+        else {
+          BL.$$(".chip", grupo).forEach(function (c) { c.classList.remove("is-selected"); });
+          chip.classList.add("is-selected");
+        }
+      });
+    });
+  });
+
+  const btnSalvar = document.getElementById("salvar-prefs");
+  if (btnSalvar) {
+    btnSalvar.addEventListener("click", function () {
+      function valores(nome) {
+        const g = BL.$('[data-grupo="' + nome + '"]');
+        const ativos = BL.$$(".chip.is-selected", g).map(function (c) { return c.dataset.valor; });
+        return g.dataset.multiplo === "1" ? ativos : (ativos[0] || null);
+      }
+      BL.salvarPreferencias({
+        orcamento: Number(document.getElementById("orcamento").value),
+        ritmo: valores("ritmo"),
+        companhia: valores("companhia"),
+        transporte: valores("transporte"),
+        restricoes: valores("restricoes"),
+        evitar: valores("evitar"),
+        acessibilidade: document.getElementById("acessibilidade").checked
+      });
+      BL.toast("Preferências salvas! Suas próximas buscas já usam esses critérios.", "sucesso");
+    });
+  }
+
+  BL.$$("#abas .tabs__tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      BL.$$("#abas .tabs__tab").forEach(function (b) { b.setAttribute("aria-selected", "false"); });
+      BL.$$("[data-painel]").forEach(function (p) { p.classList.remove("is-active"); });
+      btn.setAttribute("aria-selected", "true");
+      BL.$('[data-painel="' + btn.dataset.aba + '"]').classList.add("is-active");
+      history.replaceState(null, "", "#" + btn.dataset.aba);
+    });
+  });
+
+  if (location.hash) {
+    const alvo = BL.$('#abas .tabs__tab[data-aba="' + location.hash.slice(1) + '"]');
+    if (alvo) alvo.click();
+  }
+})();
+</script>
+</body>
+</html>

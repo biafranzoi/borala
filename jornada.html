@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boralá! — roteiro de demonstração</title>
+<meta name="description" content="A jornada completa do usuário no protótipo do Boralá!, passo a passo, com o estado da conta já preparado em cada etapa.">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/design-system.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+<div data-header></div>
+
+<main id="conteudo">
+
+  <!-- ============== CABEÇALHO ==============
+       Esta página não é produto: é a trilha para apresentar o produto.
+       Ela existe porque a jornada atravessa quatro estados de conta
+       (visitante, gratuito, premium e estabelecimento) e, numa
+       apresentação ao vivo, chegar em cada estado dava trabalho e
+       quebrava o ritmo. Aqui cada passo prepara o estado sozinho. -->
+  <section class="section section--sm">
+    <div class="container">
+      <span class="chip chip--outline"><span data-icone="bussola" data-icone-classe="icon--sm"></span> Roteiro de demonstração</span>
+      <h1 class="mt-4">A jornada completa, em doze passos</h1>
+      <p class="lead mt-4 measure">
+        Cada passo abre a tela certa já com o estado de conta que ela precisa — visitante,
+        conta gratuita, assinante ou dono de estabelecimento. Dá para seguir na ordem ou
+        pular para a parte que você quer mostrar.
+      </p>
+      <p class="body-sm text-secondary mt-4 measure">
+        Nenhum dado vem de API, de banco de imagens ou do Google: o catálogo inteiro é
+        conteúdo fictício escrito para o protótipo, e as capas dos destinos sem foto são
+        ilustrações geradas aqui mesmo. Tudo que parece salvo vive no seu navegador.
+      </p>
+
+      <div class="cluster gap-3 mt-8">
+        <button class="btn btn--lg" type="button" id="comecar">
+          Começar do início <span data-icone="seta" data-icone-classe="icon--sm"></span>
+        </button>
+        <button class="btn btn--outline" type="button" id="zerar">
+          Zerar o protótipo
+        </button>
+      </div>
+      <p class="caption text-secondary mt-3">
+        “Zerar” apaga conta, assinatura, salvos e locais deste navegador — é o estado em
+        que a pessoa chega ao site pela primeira vez.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============== PASSOS ============== -->
+  <section class="section section--sm">
+    <div class="container">
+      <div class="stack gap-10" id="atos"></div>
+    </div>
+  </section>
+
+  <!-- ============== O QUE É FALSO ==============
+       Uma apresentação honesta diz onde termina o protótipo. -->
+  <section class="section section--sm">
+    <div class="container">
+      <div class="card blob-tl">
+        <h2 class="title-lg">O que é de mentira, e vale dizer em voz alta</h2>
+        <p class="body-sm text-secondary mt-2 measure">
+          O protótipo não tem back-end. Estas são as costuras, para não prometer o que não existe.
+        </p>
+        <ul class="plan__list mt-6" id="ressalvas"></ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div data-footer></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  BL.iniciar({ nav: "jornada", modo: "viajante" });
+
+  /* ------------------------------------------------------------------
+     Estados de conta. Cada passo declara o que precisa e a página monta
+     esse estado antes de navegar — é o mesmo caminho que a barra de
+     demonstração oferece, só que na ordem da história.
+     ------------------------------------------------------------------ */
+  const LOCAL_EXEMPLO = {
+    nome: "Cervejaria Bierland",
+    categoria: "Bar",
+    cidade: "Blumenau, SC",
+    site: "instagram.com/bierland",
+    descricao: "Rota cervejeira guiada com degustação inclusa, no centro histórico.",
+    plano: "destaque",
+    status: "ativo",
+    /* de propósito: paga o plano mais caro e ainda está sem selo, que é
+       a regra de integridade mais difícil de acreditar sem ver */
+    checagem: { em: null, estado: "pendente" }
+  };
+
+  const ESTADOS = {
+    visitante: {
+      rotulo: "visitante, sem conta",
+      montar: function () { BL.resetar(); }
+    },
+    gratuito: {
+      rotulo: "conta gratuita",
+      montar: function () { BL.resetar(); BL.entrar("John Doe", "john.doe@example.com"); }
+    },
+    passe: {
+      rotulo: "passe de 30 dias",
+      montar: function () { BL.resetar(); BL.entrar("John Doe", "john.doe@example.com"); BL.assinar("passe"); }
+    },
+    premium: {
+      rotulo: "assinante anual",
+      montar: function () { BL.resetar(); BL.entrar("John Doe", "john.doe@example.com"); BL.assinar("anual"); }
+    },
+    parceiro: {
+      rotulo: "dono de estabelecimento",
+      montar: function () {
+        BL.resetar();
+        BL.entrar("John Doe", "john.doe@example.com");
+        BL.adicionarLocal(LOCAL_EXEMPLO);
+        BL.definirModo("estabelecimento");
+      }
+    },
+    manter: { rotulo: "continua como está", montar: function () {} }
+  };
+
+  /* ------------------------------------------------------------------
+     O roteiro. `destino` é a URL; `estado` é a conta que a tela precisa;
+     `olhar` é a frase que a pessoa que apresenta fala.
+     ------------------------------------------------------------------ */
+  const ATOS = [
+    {
+      nome: "Descobrir",
+      resumo: "A pergunta do produto: de onde você sai e quanto tempo aceita viajar.",
+      passos: [
+        {
+          titulo: "A home responde antes do clique",
+          estado: "visitante",
+          destino: "index.html",
+          olhar: "O hero tem duas perguntas, não cinco. Logo abaixo, três destinos já aparecem e mudam a cada mexida na busca — é o mesmo motor que roda nos resultados."
+        },
+        {
+          titulo: "Trocar a origem muda tudo",
+          estado: "manter",
+          destino: "index.html",
+          olhar: "Troque para Curitiba e até 3h: a lista vira Ilha do Mel e Morretes, e cada card passa a dizer “2h de estrada”. Nenhum destino entra por ser popular.",
+          nota: "faça a troca na própria home, sem recarregar"
+        },
+        {
+          titulo: "O limite honesto do catálogo",
+          estado: "manter",
+          destino: "index.html?origem=saopaulo&onde=exterior&tempo=3&clima=turismo&pessoas=2",
+          olhar: "“Fora do Brasil” com até 3h de viagem: o resultado é zero, e a tela diz quantos destinos voltam sem o limite e tira o limite num clique. Um protótipo que esconde o catálogo vazio engana quem decide."
+        }
+      ]
+    },
+    {
+      nome: "Escolher",
+      resumo: "Resultados com facetas, o anúncio fora do ranking e a ficha do destino.",
+      passos: [
+        {
+          titulo: "Resultados com filtros e facetas",
+          estado: "visitante",
+          destino: "resultados.html?pessoas=2&onde=brasil&clima=turismo&origem=saopaulo&tempo=6",
+          olhar: "Todos os filtros são gratuitos, inclusive o de curadoria. Cada opção mostra quantos destinos ela ainda traria, ignorando o próprio grupo — como em site de reserva."
+        },
+        {
+          titulo: "O anúncio não entra no ranking",
+          estado: "manter",
+          destino: "resultados.html?pessoas=2&onde=brasil&clima=turismo&origem=saopaulo&tempo=6",
+          olhar: "Role até o quarto card: ele é um anúncio, rotulado, com borda tracejada e a frase “posição paga”. Ele nunca é o primeiro, nunca reordena a lista e é no máximo um por página."
+        },
+        {
+          titulo: "A ficha do destino",
+          estado: "visitante",
+          destino: "destino.html?id=campos-do-jordao&origem=saopaulo",
+          olhar: "Os locais verificados aparecem sem cadeado, a linha “saindo de São Paulo” mostra o tempo real de viagem, e a reserva por parceiro vem com o aviso de comissão ao lado do botão, não no rodapé."
+        }
+      ]
+    },
+    {
+      nome: "Confiar",
+      resumo: "O selo de verificado — a parte que o modelo novo não vende.",
+      passos: [
+        {
+          titulo: "Um local gratuito, com selo",
+          estado: "visitante",
+          destino: "estabelecimento.html?id=barreado-da-nair",
+          olhar: "Plano gratuito e selo válido: “Verificado em 03/2026”. A checagem é de graça e vale igual para quem paga e para quem não paga."
+        },
+        {
+          titulo: "Um local pagante, sem selo",
+          estado: "manter",
+          destino: "estabelecimento.html?id=hotel-fabric",
+          olhar: "Paga o plano Pro e está com a checagem vencida desde 08/2025: perdeu o selo e saiu do filtro de verificados. É a prova de que o selo não é um SKU."
+        }
+      ]
+    },
+    {
+      nome: "Pagar",
+      resumo: "Onde está o paywall, e por que ele não está na busca.",
+      passos: [
+        {
+          titulo: "Os quatro planos",
+          estado: "gratuito",
+          destino: "premium.html",
+          olhar: "Gratuito, passe de 30 dias, mensal e anual. A página fala do que a pessoa ganha; o aviso de comissão aparece na FAQ, que é onde alguém de fato procura por isso."
+        },
+        {
+          titulo: "O passe que não renova",
+          estado: "passe",
+          destino: "conta.html#assinatura",
+          olhar: "A conta mostra “termina em 30 dias e não renova”. O passe existe porque a frequência real de uso é por viagem, não por mês."
+        }
+      ]
+    },
+    {
+      nome: "Viajar junto",
+      resumo: "A parte premium: votação, checklist e álbum.",
+      passos: [
+        {
+          titulo: "Viagem coletiva com votação",
+          estado: "premium",
+          destino: "viagem.html?id=fim-de-ano",
+          olhar: "Só quem organiza precisa assinar; até dez pessoas participam de graça. É o único mecanismo viral do produto — por isso não virou paywall por participante."
+        },
+        {
+          titulo: "O que o gratuito vê no lugar",
+          estado: "gratuito",
+          destino: "viagens.html",
+          olhar: "O bloqueio premium é desenhado por cima do bloco, com o preço vindo da tabela de planos. Repare que busca, filtros e locais verificados continuam abertos."
+        }
+      ]
+    },
+    {
+      nome: "Anunciar",
+      resumo: "O outro lado do produto, na mesma conta.",
+      passos: [
+        {
+          titulo: "O painel do estabelecimento",
+          estado: "parceiro",
+          destino: "parceiros-painel.html",
+          olhar: "Mesma conta, outro modo. O local está no plano Destaque, a R$ 399, e mesmo assim aparece como “aguardando curadoria”: o selo vem da checagem, não do plano. Há um botão para simular a checagem aprovada."
+        },
+        {
+          titulo: "Mensalidade ou R$ 6 por contato",
+          estado: "manter",
+          destino: "parceiros-painel.html#plano",
+          olhar: "A comparação entre a mensalidade e a cobrança por desempenho, com teto de R$ 400/mês. É o que permite vender em cidade pequena antes de existir audiência."
+        }
+      ]
+    }
+  ];
+
+  const RESSALVAS = [
+    "Não há conta de verdade, nem senha: “entrar” grava um objeto no localStorage deste navegador.",
+    "O checkout é fictício e vem com cartão e Pix de mentira preenchidos.",
+    "Os botões de reserva por parceiro mostram um aviso em vez de redirecionar — no produto seriam links assinados com o identificador de afiliado.",
+    "As métricas do painel do estabelecimento são números inventados, escalados pelo índice do local.",
+    "Upload de foto é só visual: nada sai do navegador.",
+    "O catálogo é conteúdo editorial escrito à mão. As capas dos 16 destinos regionais são ilustrações geradas para o protótipo, não fotos dos lugares."
+  ];
+
+  /* ------------------------------------------------------------------ */
+  function ir(passo) {
+    (ESTADOS[passo.estado] || ESTADOS.manter).montar();
+    location.href = passo.destino;
+  }
+
+  const alvo = document.getElementById("atos");
+  let n = 0;
+
+  ATOS.forEach(function (ato, iAto) {
+    const bloco = BL.el(
+      '<div>' +
+        '<div class="secao-topo">' +
+          "<div>" +
+            '<span class="caption strong text-secondary">Ato ' + (iAto + 1) + "</span>" +
+            "<h2 class=\"title-lg mt-1\">" + ato.nome + "</h2>" +
+            '<p class="body-sm text-secondary mt-2 measure">' + ato.resumo + "</p>" +
+          "</div>" +
+        "</div>" +
+        '<div class="stack gap-4 mt-6" data-passos></div>' +
+      "</div>"
+    );
+    const lista = BL.$("[data-passos]", bloco);
+
+    ato.passos.forEach(function (passo) {
+      n += 1;
+      const estado = ESTADOS[passo.estado] || ESTADOS.manter;
+      const item = BL.el(
+        '<article class="card passo">' +
+          '<span class="passo__n" aria-hidden="true">' + n + "</span>" +
+          '<div class="passo__corpo">' +
+            '<h3 class="title-md">' + passo.titulo + "</h3>" +
+            '<p class="body-sm text-secondary mt-2 measure">' + passo.olhar + "</p>" +
+            '<p class="caption text-secondary mt-3">' +
+              "Abre como <b>" + estado.rotulo + "</b>" +
+              (passo.nota ? " · " + passo.nota : "") +
+            "</p>" +
+          "</div>" +
+          '<div class="passo__cta">' +
+            '<button class="btn" type="button">Abrir <span data-icone="seta" data-icone-classe="icon--sm"></span></button>' +
+          "</div>" +
+        "</article>"
+      );
+      BL.$("button", item).addEventListener("click", function () { ir(passo); });
+      lista.appendChild(item);
+    });
+
+    alvo.appendChild(bloco);
+  });
+
+  document.getElementById("ressalvas").innerHTML = RESSALVAS.map(function (r) {
+    return "<li>" + BL.icone("check", "icon--sm") + "<span>" + r + "</span></li>";
+  }).join("");
+
+  document.getElementById("comecar").addEventListener("click", function () {
+    ir(ATOS[0].passos[0]);
+  });
+
+  document.getElementById("zerar").addEventListener("click", function () {
+    BL.resetar();
+    location.reload();
+  });
+
+  BL.hidratarIcones();
+})();
+</script>
+</body>
+</html>

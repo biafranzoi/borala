@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Destino — Boralá!</title>
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/design-system.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<div data-header></div>
+
+<main id="conteudo"></main>
+
+<div data-footer></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  BL.iniciar({ nav: "destinos", modo: "viajante" });
+
+  const p = BL.params();
+  const d = blBuscarDestino(p.id || "noronha");
+  const conteudo = document.getElementById("conteudo");
+
+  if (!d) {
+    conteudo.innerHTML =
+      '<div class="container section"><div class="empty">' +
+        '<span class="icon-tile">' + BL.icone("busca", "icon--lg") + "</span>" +
+        "<h2>Destino não encontrado</h2>" +
+        '<a class="btn" href="resultados.html">Boralá!</a>' +
+      "</div></div>";
+    return;
+  }
+
+  document.title = d.nome + " — Boralá!";
+  const match = blCalcularMatch(d, { clima: p.clima, onde: d.regiao, pessoas: p.pessoas, origem: p.origem, tempo: p.tempo });
+
+  /* A origem chega por parâmetro, vinda dos resultados: sem ela a ficha
+     não fala de distância, só do destino. */
+  const origemEscolhida = BL_ORIGENS.filter(function (o) { return o.v === p.origem; })[0] || null;
+  const nomeOrigem = origemEscolhida ? origemEscolhida.label.split(",")[0] : "";
+  const rotuloPartida = origemEscolhida ? blRotuloPartida(d, origemEscolhida.v) : null;
+
+  /* ---------- topo ---------- */
+  const seloVerificado = d.verificado
+    ? '<span class="badge">' + BL.icone("check-circulo", "icon--sm") + "Destino verificado</span>"
+    : '<span class="badge" style="color: var(--text-secondary)">' + BL.icone("pino", "icon--sm") + "Sem curadoria ainda</span>";
+
+  conteudo.innerHTML =
+    '<section class="hero hero--sm hero--foto"><img class="hero__bg" src="' + d.img + '" alt="">' +
+      '<div class="container hero__inner">' +
+        '<a class="link" href="resultados.html">' + BL.icone("voltar", "icon--sm") + "Voltar para os resultados</a>" +
+        '<div class="cluster between gap-6 mt-6" style="align-items: flex-end">' +
+          "<div>" +
+            "<h1>" + d.nome + "</h1>" +
+            '<p class="hero__lead">' + d.uf + ", " + d.pais + "</p>" +
+          "</div>" +
+          '<div class="cluster gap-3">' + seloVerificado +
+            '<span class="badge" style="color: var(--c-brand-700)">' + match + "% match com sua busca</span>" +
+          "</div>" +
+        "</div>" +
+      "</div>" +
+    "</section>" +
+
+    '<section class="section">' +
+      '<div class="container"><div class="grid grid--aside" id="grade-destino">' +
+
+        "<div>" +
+          '<div class="cluster gap-2">' + d.tags.map(function (t) {
+            return '<span class="tag">' + t + "</span>";
+          }).join("") + "</div>" +
+          '<p class="mt-6" style="font-size: var(--text-lg)">' + d.resumo + "</p>" +
+
+          '<div class="tabs mt-12" id="abas">' +
+            '<button class="tabs__tab" role="tab" aria-selected="true" type="button" data-aba="visao">Visão geral</button>' +
+            '<button class="tabs__tab" role="tab" aria-selected="false" type="button" data-aba="locais">Locais verificados</button>' +
+            '<button class="tabs__tab" role="tab" aria-selected="false" type="button" data-aba="avaliacoes">Avaliações de assinantes</button>' +
+          "</div>" +
+
+          /* --- visão geral --- */
+          '<div class="tabpanel is-active" data-painel="visao">' +
+            "<h4>O que mais importa aqui</h4>" +
+            '<ul class="plan__list mt-4">' + d.destaques.map(function (h) {
+              return "<li>" + BL.icone("check", "icon--sm") + "<span>" + h + "</span></li>";
+            }).join("") + "</ul>" +
+            '<div class="grid grid--2 mt-8">' +
+              '<div class="card card--flat card--sm">' +
+                '<div class="cluster gap-2">' + BL.icone("calendario", "icon--sm") + '<span class="caption strong text-secondary">Melhor época</span></div>' +
+                '<p class="body-sm mt-2">' + d.epoca + "</p>" +
+              "</div>" +
+              '<div class="card card--flat card--sm">' +
+                '<div class="cluster gap-2">' + BL.icone("aviao", "icon--sm") + '<span class="caption strong text-secondary">Como chegar</span></div>' +
+                '<p class="body-sm mt-2">' + d.transporte + "</p>" +
+              "</div>" +
+            "</div>" +
+          "</div>" +
+
+          /* --- locais verificados (gratuito) --- */
+          /* Era um bloco data-premium. A checagem é gratuita para o
+             estabelecimento e a ficha é gratuita para o viajante: é o que
+             responde à pergunta que trouxe a pessoa até aqui. */
+          '<div class="tabpanel" data-painel="locais">' +
+            "<div>" +
+              '<p class="body-sm text-secondary">Hospedagens, restaurantes e passeios que passaram pela nossa curadoria. ' +
+                'A data da última checagem fica visível em cada um.</p>' +
+              '<div class="stack gap-3 mt-6">' + d.locais.map(function (l) {
+                return '<a class="vcard" href="estabelecimento.html?id=' + l.id + '">' +
+                  '<img class="vcard__thumb" src="' + l.fotos[0] + '" alt="" loading="lazy">' +
+                  '<div class="vcard__body">' +
+                    '<div class="cluster gap-2"><strong>' + l.nome + "</strong>" +
+                      (l.verificado ? '<span class="tag tag--success">' + BL.icone("escudo", "icon--sm") + "verificado</span>" : "") +
+                      (l.plano === "destaque" ? '<span class="tag">' + BL.icone("alta", "icon--sm") + "anúncio</span>" : "") +
+                    "</div>" +
+                    '<p class="caption text-secondary">' + l.tipo + " · " + l.faixa + (l.selo ? " · " + l.selo : "") + "</p>" +
+                    '<div class="cluster gap-2">' + BL.estrelas(l.nota) +
+                      '<span class="caption strong">' + l.nota.toFixed(1) + "</span>" +
+                      '<span class="caption text-secondary">' + l.totalAvaliacoes.toLocaleString("pt-BR") + " avaliações</span>" +
+                    "</div>" +
+                  "</div>" +
+                  '<span class="vcard__seta">' + BL.icone("seta", "icon--sm") + "</span></a>";
+              }).join("") + "</div>" +
+            "</div>" +
+          "</div>" +
+
+          /* --- avaliações (premium) --- */
+          '<div class="tabpanel" data-painel="avaliacoes">' +
+            '<div data-premium data-premium-origem="avaliacoes" ' +
+                 'data-premium-titulo="Avaliações de assinantes" ' +
+                 'data-premium-texto="Só quem assina pode ler e escrever avaliações — é o que mantém as notas confiáveis.">' +
+              (d.avaliacoes.length
+                ? '<div class="stack">' + d.avaliacoes.map(function (a) {
+                    return '<div class="review">' +
+                      '<img class="avatar" src="' + a.avatar + '" alt="">' +
+                      '<div class="review__body">' +
+                        '<div class="cluster gap-3"><strong class="body-sm">' + a.autor + "</strong>" +
+                          '<span class="tag caption">' + BL.icone("medalha", "icon--sm") + "assinante</span>" +
+                          '<span class="caption text-secondary">' + a.data + "</span></div>" +
+                        BL.estrelas(a.nota) +
+                        "<p>" + a.texto + "</p>" +
+                      "</div></div>";
+                  }).join("") + "</div>"
+                : '<p class="text-secondary">Ainda não há avaliações de assinantes para este destino. Seja a primeira pessoa a avaliar depois da viagem.</p>') +
+              '<button class="btn btn--outline mt-6" type="button" id="btn-avaliar">' + BL.icone("lapis", "icon--sm") + " Escrever avaliação</button>" +
+            "</div>" +
+          "</div>" +
+        "</div>" +
+
+        /* --- coluna lateral --- */
+        '<aside class="card blob-tr sticky-col">' +
+          '<p class="caption text-secondary">A partir de · ' + d.noites + " noites</p>" +
+          '<div class="cluster gap-2"><span class="plan__price" style="font-size: 44px">' + BL.dinheiro(d.preco) + "</span></div>" +
+          '<p class="caption text-secondary">estimativa por pessoa, com hospedagem e passeios</p>' +
+
+          /* Reserva por parceiro: é aqui que o produto ganha dinheiro de
+             quem nunca vai assinar — a pessoa acabou de escolher o destino
+             e ainda não tem passagem nem hospedagem. A comissão é
+             declarada logo abaixo, no mesmo bloco. */
+          '<div class="stack gap-2 mt-6">' +
+            BL_AFILIADOS.map(function (a, i) {
+              return '<a class="btn ' + (i === 0 ? "" : "btn--outline") + ' btn--block" ' +
+                'href="#" data-afiliado="' + a.id + '">' + BL.icone(a.icone, "icon--sm") + " " + a.rotulo + "</a>";
+            }).join("") +
+          "</div>" +
+          '<p class="caption text-tertiary mt-2" id="aviso-afiliado"></p>' +
+          '<hr class="divider mt-6">' +
+          '<button class="btn btn--outline btn--block mt-6" type="button" id="btn-planejar">Planejar esta viagem</button>' +
+          '<div class="cluster gap-3 mt-4">' +
+            '<button class="btn-icon" type="button" data-salvar="' + d.id + '" aria-pressed="' + BL.salvo(d.id) + '" aria-label="Salvar ' + d.nome + ' na sua lista">' + BL.icone("coracao", "icon--sm") + "</button>" +
+            '<a class="btn btn--outline grow" href="viagens.html?destino=' + d.id + '">' + BL.icone("pessoas", "icon--sm") + " Viagem coletiva</a>" +
+          "</div>" +
+          /* Numa coluna estreita o bloqueio não pode ser o overlay: ele é
+             desenhado por cima do bloco embrulhado e, num botão baixo,
+             escapa por cima do que vem depois. `.lock` ocupa a própria
+             altura e empurra o resto para baixo. */
+          (BL.premium()
+            ? '<button class="btn btn--ghost btn--block btn--sm mt-3" type="button" id="btn-alerta">' +
+                BL.icone("alta", "icon--sm") + " Avisar quando o preço cair</button>"
+            : '<div class="lock mt-6">' +
+                '<span class="lock__head">' + BL.icone("cadeado", "icon--sm") + "Alertas de preço</span>" +
+                '<p class="caption text-secondary">Avisamos você quando a estimativa deste destino cair.</p>' +
+                '<a class="link caption" href="premium.html?origem=alertas">Conhecer o Premium ' +
+                  BL.icone("seta", "icon--sm") + "</a>" +
+              "</div>") +
+          '<hr class="divider mt-6">' +
+          '<div class="stack gap-3 mt-6">' +
+            '<div class="cluster between"><span class="body-sm text-secondary">Clima da viagem</span><strong class="body-sm">' + d.climas.slice(0, 2).join(", ") + "</strong></div>" +
+            '<div class="cluster between"><span class="body-sm text-secondary">Perfil</span><strong class="body-sm">' + d.tipos.join(", ") + "</strong></div>" +
+            '<div class="cluster between"><span class="body-sm text-secondary">Curadoria</span><strong class="body-sm">' + (d.verificado ? "verificada" : "não verificada") + "</strong></div>" +
+            /* Quando a busca trouxe uma origem, o tempo de viagem dali é a
+               informação mais útil da página. */
+            (rotuloPartida
+              ? '<div class="cluster between"><span class="body-sm text-secondary">Saindo de ' + nomeOrigem +
+                '</span><strong class="body-sm">' + rotuloPartida + "</strong></div>"
+              : "") +
+          "</div>" +
+        "</aside>" +
+
+      "</div></div>" +
+    "</section>" +
+
+    '<section class="section section--sm"><div class="container">' +
+      "<h3>Outros destinos parecidos</h3>" +
+      '<div class="grid grid--3 mt-8" id="similares"></div>' +
+    "</div></section>";
+
+  /* ---------- abas ---------- */
+  BL.$$("#abas .tabs__tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      BL.$$("#abas .tabs__tab").forEach(function (b) { b.setAttribute("aria-selected", "false"); });
+      BL.$$("[data-painel]").forEach(function (p2) { p2.classList.remove("is-active"); });
+      btn.setAttribute("aria-selected", "true");
+      BL.$('[data-painel="' + btn.dataset.aba + '"]').classList.add("is-active");
+    });
+  });
+
+  /* ---------- similares ---------- */
+  const similares = BL_DESTINOS
+    .filter(function (x) { return x.id !== d.id && x.regiao === d.regiao; })
+    .map(function (x) {
+      const c = Object.assign({}, x);
+      c.match = blCalcularMatch(x, { clima: d.climas[0], onde: x.regiao });
+      return c;
+    })
+    .sort(function (a, b) { return b.match - a.match; })
+    .slice(0, 3);
+  document.getElementById("similares").innerHTML = similares.map(function (x) { return BL.cardDestino(x); }).join("");
+
+  /* ---------- ações ---------- */
+  BL.ligarSalvar(conteudo);
+  BL.aplicarBloqueios();
+
+  /* O aviso de comissão fica junto dos botões de reserva, não no rodapé:
+     é onde a pessoa está decidindo clicar. */
+  const avisoAfiliado = document.getElementById("aviso-afiliado");
+  if (avisoAfiliado) avisoAfiliado.textContent = BL_AVISO_AFILIADO;
+
+  BL.$$("[data-afiliado]").forEach(function (b) {
+    b.addEventListener("click", function (e) {
+      e.preventDefault();
+      const a = BL_AFILIADOS.filter(function (x) { return x.id === b.dataset.afiliado; })[0];
+      BL.toast("No protótipo não há parceiro de verdade. Aqui iria " + a.parceiro + " (comissão de " + a.comissao + ").");
+    });
+  });
+
+  const btnAlerta = document.getElementById("btn-alerta");
+  if (btnAlerta) {
+    btnAlerta.addEventListener("click", function () {
+      BL.toast("Alerta criado. Avisamos quando a estimativa de " + d.nome + " cair.", "sucesso");
+    });
+  }
+
+  document.getElementById("btn-planejar").addEventListener("click", function () {
+    if (!BL.logado()) { location.href = "login.html?next=" + encodeURIComponent("destino.html?id=" + d.id); return; }
+    BL.toast("Viagem rascunhada! Ela aparece em Minha conta.", "sucesso");
+  });
+
+  const btnAvaliar = document.getElementById("btn-avaliar");
+  if (btnAvaliar) {
+    btnAvaliar.addEventListener("click", function () {
+      BL.toast("No protótipo, a escrita de avaliação é só demonstrativa.");
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assinar Premium — Boralá!</title>
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/design-system.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<div data-header></div>
+
+<main class="section">
+  <div class="container" id="area-checkout"></div>
+</main>
+
+<div data-footer></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  BL.iniciar({ nav: "premium" });
+
+  const area = document.getElementById("area-checkout");
+
+  /* O plano vem da página de preços (?plano=passe|mensal|anual). Sem
+     parâmetro, cai no recomendado. */
+  const pagos = BL_PLANOS_VIAJANTE.filter(function (p) { return p.preco > 0; });
+  const pedido = pagos.filter(function (p) { return p.id === BL.params().plano; })[0] ||
+    pagos.filter(function (p) { return p.recomendado; })[0] || pagos[0];
+
+  /* Teste de 7 dias só faz sentido em plano que renova: o passe já tem
+     prazo e termina sozinho. */
+  const temTeste = !!pedido.recorrente;
+
+  /* sem conta não há assinatura: manda para o login e volta */
+  if (!BL.logado()) {
+    location.href = "login.html?next=" + encodeURIComponent("checkout.html");
+    return;
+  }
+
+  function stepper(ativo) {
+    const passos = ["Conta", "Pagamento", "Pronto"];
+    return '<div class="stepper">' + passos.map(function (nome, i) {
+      const estado = i < ativo ? "is-done" : i === ativo ? "is-active" : "";
+      return '<span class="stepper__item ' + estado + '">' +
+        '<span class="stepper__num">' + (i < ativo ? BL.icone("check", "icon--sm") : i + 1) + "</span>" + nome +
+        "</span>" + (i < passos.length - 1 ? '<span class="stepper__line"></span>' : "");
+    }).join("") + "</div>";
+  }
+
+  function resumo() {
+    return '<aside class="card blob-tr sticky-col">' +
+      "<h4>Resumo do pedido</h4>" +
+      '<div class="cluster between mt-6"><span class="body-sm">' + pedido.nome +
+        '</span><strong class="body-sm">' + BL.dinheiro(pedido.preco, true) + "</strong></div>" +
+      (pedido.equivalente
+        ? '<p class="caption text-secondary mt-2">equivale a ' + BL.dinheiro(pedido.equivalente, true) + "/mês · " + pedido.economia + "</p>"
+        : "") +
+      (temTeste
+        ? '<div class="cluster between mt-2"><span class="body-sm text-secondary">7 dias de teste</span><strong class="body-sm" style="color: var(--action-success)">grátis</strong></div>'
+        : '<div class="cluster between mt-2"><span class="body-sm text-secondary">Validade</span><strong class="body-sm">' + pedido.dias + " dias</strong></div>") +
+      '<hr class="divider mt-4">' +
+      '<div class="cluster between mt-4"><strong>Total hoje</strong><strong style="font-size: var(--text-xl)">' +
+        (temTeste ? "R$ 0,00" : BL.dinheiro(pedido.preco, true)) + "</strong></div>" +
+      '<p class="caption text-secondary mt-2">' +
+        (temTeste
+          ? "Depois do teste, " + BL.dinheiro(pedido.preco, true) + " por " + pedido.ciclo + ". Cancele quando quiser."
+          : "Cobrança única. O passe vale " + pedido.dias + " dias, termina sozinho e não renova.") + "</p>" +
+      '<ul class="plan__list mt-6">' +
+        blFuncionalidades("premium").map(function (f) {
+          return "<li>" + BL.icone("check", "icon--sm") + "<span>" + f.titulo + "</span></li>";
+        }).join("") +
+      "</ul>" +
+      '<a class="link body-sm strong mt-4" href="premium.html#planos">Trocar de plano</a>' +
+      "</aside>";
+  }
+
+  function telaPagamento() {
+    area.innerHTML =
+      stepper(1) +
+      '<div class="grid grid--aside mt-12" id="grade-checkout">' +
+        "<div>" +
+          "<h1>" + (pedido.recorrente ? "Confirmar assinatura" : "Confirmar passe de viagem") + "</h1>" +
+          '<p class="text-secondary mt-2">Olá, ' + BL.estado().usuario.nome + ". Falta só escolher a forma de pagamento.</p>" +
+
+          '<div class="card card--brand-subtle mt-6 cluster gap-3" style="align-items: flex-start">' +
+            BL.icone("escudo") +
+            '<p class="body-sm"><strong>Protótipo sem back-end.</strong> Nada é cobrado e nada é enviado para lugar nenhum. ' +
+            "Os campos abaixo já vêm com dados fictícios — não digite dados reais de cartão.</p>" +
+          "</div>" +
+
+          '<div class="segmented mt-8" id="metodo">' +
+            '<button type="button" data-metodo="cartao" aria-pressed="true">Cartão de crédito</button>' +
+            '<button type="button" data-metodo="pix" aria-pressed="false">Pix</button>' +
+          "</div>" +
+
+          '<form class="card mt-6" id="form-pagamento">' +
+            '<div id="bloco-cartao" class="stack gap-4">' +
+              '<div class="field"><label class="field__label" for="num">Número do cartão</label>' +
+                '<input class="input" id="num" value="4111 1111 1111 1111" inputmode="numeric" autocomplete="off"></div>' +
+              '<div class="field"><label class="field__label" for="titular">Nome impresso</label>' +
+                '<input class="input" id="titular" value="NOME DE TESTE" autocomplete="off"></div>' +
+              '<div class="grid grid--2" style="gap: 16px">' +
+                '<div class="field"><label class="field__label" for="val">Validade</label><input class="input" id="val" value="12/30" autocomplete="off"></div>' +
+                '<div class="field"><label class="field__label" for="cvv">CVV</label><input class="input" id="cvv" value="123" autocomplete="off"></div>' +
+              "</div>" +
+            "</div>" +
+
+            '<div id="bloco-pix" class="hidden text-center">' +
+              '<div class="card card--flat" style="display:inline-block; padding: 24px">' +
+                '<div style="width:180px;height:180px;background:repeating-conic-gradient(var(--text-primary) 0 25%, var(--c-neutral-0) 0 50%) 50%/20px 20px;border-radius:12px"></div>' +
+              "</div>" +
+              '<p class="body-sm text-secondary mt-4">QR de demonstração. No protótipo, o pagamento é confirmado automaticamente.</p>' +
+            "</div>" +
+
+            '<button class="btn btn--lg btn--block mt-8" type="submit">' + (temTeste ? "Começar teste de 7 dias" : "Pagar " + BL.dinheiro(pedido.preco, true)) + '</button>' +
+            '<p class="caption text-secondary text-center mt-2">Ao confirmar você aceita os termos de uso do protótipo.</p>' +
+          "</form>" +
+        "</div>" +
+        resumo() +
+      "</div>";
+
+    BL.$$("#metodo button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        BL.$$("#metodo button").forEach(function (x) { x.setAttribute("aria-pressed", "false"); });
+        b.setAttribute("aria-pressed", "true");
+        document.getElementById("bloco-cartao").classList.toggle("hidden", b.dataset.metodo !== "cartao");
+        document.getElementById("bloco-pix").classList.toggle("hidden", b.dataset.metodo !== "pix");
+      });
+    });
+
+    document.getElementById("form-pagamento").addEventListener("submit", function (e) {
+      e.preventDefault();
+      BL.assinar(pedido.id);
+      telaSucesso();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
+  function telaSucesso() {
+    const atalhos = [
+      { icone: "pessoas", titulo: "Viagens coletivas", texto: "Convide a turma e votem no destino.", link: "viagens.html" },
+      { icone: "camera", titulo: "Álbum de viagens", texto: "Monte e compartilhe o álbum da viagem.", link: "album.html" },
+      { icone: "estrela", titulo: "Avaliações de assinantes", texto: "Leia e escreva avaliações de quem foi.", link: "destino.html?id=noronha" }
+    ];
+    area.innerHTML =
+      stepper(2) +
+      '<div class="card blob-br mt-12 text-center" style="max-width: 720px; margin-inline: auto">' +
+        '<span class="icon-tile" style="margin-inline: auto; background: var(--bg-success-subtle); color: var(--action-success)">' + BL.icone("check-circulo", "icon--lg") + "</span>" +
+        '<h1 class="mt-6">' + (BL.planoDoViajante() && !BL.planoDoViajante().recorrente ? "Passe ativo!" : "Assinatura ativa!") + "</h1>" +
+        '<p class="text-secondary mt-2">' + (function () {
+          const pl = BL.planoDoViajante();
+          const dias = BL.diasRestantes();
+          if (pl && !pl.recorrente) {
+            return "Seu acesso está liberado por " + dias + " dias. Ele termina sozinho — não precisa cancelar nada.";
+          }
+          return "Seu acesso premium já está liberado. O primeiro pagamento acontece depois dos 7 dias de teste.";
+        })() + "</p>" +
+        '<div class="cluster gap-3 center mt-8">' +
+          '<a class="btn btn--lg" href="viagens.html">Criar uma viagem coletiva ' + BL.icone("seta", "icon--sm") + "</a>" +
+          '<a class="btn btn--outline btn--lg" href="conta.html">Minha conta</a>' +
+        "</div>" +
+      "</div>" +
+      '<div class="grid grid--3 mt-12">' + atalhos.map(function (a) {
+        return '<a class="card step" href="' + a.link + '">' +
+          '<span class="icon-tile">' + BL.icone(a.icone, "icon--lg") + "</span>" +
+          "<div><h4>" + a.titulo + '</h4><p class="body-sm text-secondary mt-2">' + a.texto + "</p></div>" +
+          '<span class="link body-sm">Abrir ' + BL.icone("seta", "icon--sm") + "</span></a>";
+      }).join("") + "</div>";
+  }
+
+  if (BL.premium()) telaSucesso(); else telaPagamento();
+})();
+</script>
+</body>
+</html>

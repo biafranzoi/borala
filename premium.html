@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preços — Boralá!</title>
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/design-system.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<div data-header></div>
+
+<main>
+  <section class="hero hero--sm">
+    <img class="hero__bg" src="assets/img/planejamento.jpg" alt="">
+    <div class="container hero__inner">
+      <span class="chip chip--outline">Preços</span>
+      <h1 class="mt-4" id="titulo-premium">Descobrir para onde ir é grátis</h1>
+      <p class="hero__lead" id="sub-premium">Procure quantos destinos quiser, sem conta e sem pagar. O Premium entra depois que vocês escolheram para onde ir.</p>
+      <div class="cluster gap-4 mt-8" id="hero-cta"></div>
+    </div>
+  </section>
+
+  <!-- o que o plano gratuito resolve -->
+  <section class="section">
+    <div class="container">
+      <div class="cluster between gap-4">
+        <div>
+          <h2>Grátis, para sempre</h2>
+          <p class="text-secondary measure mt-4">Tudo que você precisa para descobrir para onde ir: a busca completa, todos os filtros e os locais conferidos pela nossa curadoria.</p>
+        </div>
+        <a class="btn btn--outline" href="resultados.html">Boralá! <span data-icone="seta" data-icone-classe="icon--sm"></span></a>
+      </div>
+      <div class="grid grid--3 mt-12" id="features-free"></div>
+    </div>
+  </section>
+
+  <!-- o que o premium acrescenta -->
+  <section class="section section--sm">
+    <div class="container">
+      <h2>O que o Premium acrescenta</h2>
+      <p class="text-secondary measure mt-4">Depois de escolher o destino: organizar a viagem com quem vai junto, registrar como foi e ser avisado quando o preço cair.</p>
+      <div class="grid grid--3 mt-12" id="features-premium"></div>
+    </div>
+  </section>
+
+  <!-- planos -->
+  <section class="section section--subtle" style="border-top-left-radius: var(--radius-blob-lg)" id="planos">
+    <div class="container">
+      <div class="text-center">
+        <h2>Escolha como pagar</h2>
+        <p class="text-secondary measure mx-auto mt-4">Leve só o passe de 30 dias para a viagem que você está planejando agora, ou assine por mês ou por ano.</p>
+      </div>
+
+      <div class="plans plans--4 mt-12" id="planos-viajante"></div>
+
+      <p class="caption text-secondary text-center mt-8">Sem fidelidade em nenhum plano. O passe não renova: ele simplesmente termina.</p>
+    </div>
+  </section>
+
+  <!-- comparação -->
+  <section class="section">
+    <div class="container">
+      <h2>Comparando os planos</h2>
+      <div class="table-wrap mt-8">
+        <table class="table table--compare">
+          <thead>
+            <tr><th>Funcionalidade</th><th>Gratuito</th><th>Premium</th></tr>
+          </thead>
+          <tbody id="tabela-compara"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- A seção "De onde vem a nossa receita" saiu daqui: era a explicação do
+       modelo de negócio escrita para quem construiu o produto, não para quem
+       está decidindo se assina. O que a pessoa precisa saber continua onde ela
+       encontra na hora certa — o aviso de comissão ao lado dos botões de
+       reserva, o rótulo "Anúncio" no próprio anúncio, e a pergunta sobre
+       comissão aqui embaixo, na FAQ, que é onde alguém de fato procura. -->
+
+  <!-- faq -->
+  <section class="section section--sm">
+    <div class="container">
+      <h2>Perguntas frequentes</h2>
+      <div class="grid grid--2 mt-8">
+        <div class="card card--flat">
+          <h4>Qual a diferença entre o passe e a assinatura?</h4>
+          <p class="body-sm text-secondary mt-2">O passe dá os mesmos recursos por 30 dias e termina sozinho — ninguém precisa lembrar de cancelar. A assinatura renova, mensal ou anual, e sai mais barata por mês.</p>
+        </div>
+        <div class="card card--flat">
+          <h4>O selo de verificado é pago pelo estabelecimento?</h4>
+          <p class="body-sm text-secondary mt-2">Não. O selo não está à venda: ele vem da checagem da nossa curadoria, mostra a data em que foi feita e vence depois de 12 meses.</p>
+        </div>
+        <div class="card card--flat">
+          <h4>Posso cancelar quando quiser?</h4>
+          <p class="body-sm text-secondary mt-2">Sim. O acesso continua até o fim do período já pago e não há multa.</p>
+        </div>
+        <div class="card card--flat">
+          <h4>Quantas pessoas posso convidar numa viagem coletiva?</h4>
+          <p class="body-sm text-secondary mt-2">Até 10 pessoas por viagem. Só quem organiza precisa ser assinante — quem foi convidado participa sem pagar.</p>
+        </div>
+        <div class="card card--flat">
+          <h4>Preciso pagar para ver os locais verificados?</h4>
+          <p class="body-sm text-secondary mt-2">Não. A ficha completa dos locais conferidos pela curadoria, com a data da checagem, está no plano gratuito.</p>
+        </div>
+        <div class="card card--flat">
+          <h4>Vocês ganham comissão nas reservas?</h4>
+          <p class="body-sm text-secondary mt-2" id="faq-afiliado"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div data-footer></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  BL.iniciar({ nav: "premium", modo: "viajante" });
+  const p = BL.params();
+  const assinante = BL.premium();
+  const plano = BL.planoDoViajante();
+  const dias = BL.diasRestantes();
+
+  /* Para quem já tem conta esta página deixa de ser propaganda e passa a
+     ser "o que falta na minha conta" ou "o que eu já tenho". */
+  if (BL.logado()) {
+    const nome = BL.estado().usuario.nome.split(" ")[0];
+    document.getElementById("titulo-premium").textContent = assinante
+      ? "Sua assinatura premium"
+      : nome + ", veja o que o Premium acrescenta";
+    document.getElementById("sub-premium").textContent = assinante
+      ? "Tudo abaixo já está liberado na sua conta. Para cobrança e cancelamento, use a aba Assinatura da sua conta."
+      : "O Premium entra depois que o destino está escolhido: votação com quem vai junto, rateio dos custos, checklist e álbum da viagem.";
+  }
+
+  /* ---- CTA do topo ---- */
+  const precoEntrada = BL.precoDeEntrada();
+  document.getElementById("hero-cta").innerHTML = assinante
+    ? '<span class="badge badge--premium">' + BL.icone("check-circulo", "icon--sm") +
+      (plano ? plano.nome : "Premium") + (dias === null ? "" : " · " + dias + " dias") + "</span>" +
+      '<a class="btn btn--inverse" href="conta.html#assinatura">Ir para minha conta ' + BL.icone("seta", "icon--sm") + "</a>"
+    : '<a class="btn btn--inverse btn--lg" href="resultados.html">Boralá! É de graça ' + BL.icone("seta", "icon--sm") + "</a>" +
+      '<a class="btn btn--ghost btn--lg" href="#planos">Ver planos do Premium</a>';
+
+  /* Mensagem de quem chegou aqui por um bloqueio. As duas primeiras são de
+     funcionalidades que saíram do Premium: quem vier por um link antigo
+     precisa ouvir que agora é grátis, não uma oferta. */
+  if (p.origem) {
+    const mensagens = {
+      "filtro-verificados": "O filtro de destinos verificados faz parte do plano gratuito.",
+      "locais-verificados": "Os locais verificados fazem parte do plano gratuito.",
+      "preferencias": "As preferências avançadas fazem parte do plano gratuito.",
+      "resultados": "A busca e os resultados completos são gratuitos.",
+      "avaliacoes": "As avaliações de assinantes fazem parte do Premium.",
+      "avaliacoes-local": "As avaliações de assinantes fazem parte do Premium.",
+      "viagens": "As viagens coletivas fazem parte do Premium.",
+      "album": "Os álbuns de viagem fazem parte do Premium.",
+      "alertas": "Os alertas de preço fazem parte do Premium."
+    };
+    if (mensagens[p.origem]) setTimeout(function () { BL.toast(mensagens[p.origem]); }, 400);
+  }
+
+  /* ---- funcionalidades, dos dois lados da linha ---- */
+  /* `agoraGratis` continua no dado porque serve à documentação da mudança,
+     mas não vira rótulo na tela: para quem visita, isso sempre foi grátis. */
+  function cartaoFuncionalidade(f) {
+    const marca = f.novo ? '<span class="tag">novo</span>' : "";
+    return '<article class="card card--flat">' +
+      '<div class="cluster between"><span class="icon-tile">' + BL.icone(f.icone, "icon--lg") + "</span>" + marca + "</div>" +
+      '<h3 class="mt-4">' + f.titulo + "</h3>" +
+      '<p class="body-sm text-secondary mt-2">' + f.texto + "</p>" +
+      (f.link ? '<a class="link body-sm strong mt-4" href="' + f.link + '">Ver na prática ' + BL.icone("seta", "icon--sm") + "</a>" : "") +
+      "</article>";
+  }
+
+  document.getElementById("features-free").innerHTML =
+    blFuncionalidades("gratuito").map(cartaoFuncionalidade).join("");
+  document.getElementById("features-premium").innerHTML =
+    blFuncionalidades("premium").map(cartaoFuncionalidade).join("");
+
+  /* ---- cards de plano ---- */
+  const gratis = blFuncionalidades("gratuito");
+  const pagas = blFuncionalidades("premium");
+
+  function listaDoPlano(planoId) {
+    if (planoId === "gratuito") {
+      return gratis.map(function (f) {
+        return "<li>" + BL.icone("check", "icon--sm") + f.titulo + "</li>";
+      }).join("") +
+      pagas.map(function (f) {
+        return '<li class="is-off">' + BL.icone("fechar", "icon--sm") + f.titulo + "</li>";
+      }).join("");
+    }
+    return "<li>" + BL.icone("check", "icon--sm") + "Tudo do plano gratuito</li>" +
+      pagas.map(function (f) {
+        return "<li>" + BL.icone("check", "icon--sm") + f.titulo + "</li>";
+      }).join("");
+  }
+
+  document.getElementById("planos-viajante").innerHTML = BL_PLANOS_VIAJANTE.map(function (pl) {
+    const atual = assinante && plano && plano.id === pl.id;
+    const destaque = pl.recomendado && !assinante;
+    const preco = pl.preco === 0
+      ? "R$ 0"
+      : '<span data-preco="' + pl.id + '"></span>';
+
+    let rodape;
+    if (pl.id === "gratuito") {
+      rodape = '<a class="btn btn--outline btn--block" href="resultados.html">Continuar grátis</a>';
+    } else if (atual) {
+      rodape = '<span class="badge badge--premium btn--block text-center">' +
+        BL.icone("check-circulo", "icon--sm") + "Seu plano atual</span>" +
+        '<button class="btn btn--ghost btn--block btn--sm mt-2" type="button" data-cancelar>Cancelar</button>';
+    } else {
+      rodape = '<a class="btn ' + (destaque ? "" : "btn--outline") + ' btn--block" href="checkout.html?plano=' + pl.id + '">' +
+        (pl.recorrente ? "Assinar" : "Comprar passe") + " " + BL.icone("seta", "icon--sm") + "</a>";
+    }
+
+    return '<div class="card plan ' + (destaque ? "blob-br" : "") + '"' +
+      (destaque ? ' style="outline: 3px solid var(--c-brand-600)"' : "") + ">" +
+      '<div class="cluster between gap-2"><h3>' + pl.nome + "</h3>" +
+        (pl.recomendado ? '<span class="badge badge--premium">' + BL.icone("medalha", "icon--sm") + "melhor preço</span>" : "") +
+        (pl.selo ? '<span class="tag">' + pl.selo + "</span>" : "") +
+      "</div>" +
+      '<p class="body-sm text-secondary">' + pl.descricao + "</p>" +
+      '<div class="plan__price">' + preco + "<span>/" + pl.ciclo + "</span></div>" +
+      (pl.equivalente
+        ? '<p class="caption text-brand strong">equivale a <span data-preco="' + pl.id + '" data-preco-campo="equivalente"></span>/mês · ' + pl.economia + "</p>"
+        : "") +
+      '<ul class="plan__list">' + listaDoPlano(pl.id) + "</ul>" +
+      rodape +
+      "</div>";
+  }).join("");
+
+  /* preencherPrecos roda no boot, antes destes cards existirem */
+  BL.preencherPrecos(document.getElementById("planos-viajante"));
+
+  const btnCancelar = document.querySelector("[data-cancelar]");
+  if (btnCancelar) {
+    btnCancelar.addEventListener("click", function () {
+      BL.cancelarAssinatura();
+      BL.toast("Assinatura cancelada. Você continua com a conta gratuita.");
+      setTimeout(function () { location.reload(); }, 800);
+    });
+  }
+
+  /* ---- tabela ---- */
+  document.getElementById("tabela-compara").innerHTML = BL_FUNCIONALIDADES.map(function (f) {
+    const livre = f.plano === "gratuito";
+    return "<tr><td>" + f.titulo + "</td>" +
+      "<td>" + (livre ? BL.icone("check") : BL.icone("fechar", "is-off")) + "</td>" +
+      "<td>" + BL.icone("check") + "</td></tr>";
+  }).join("");
+
+  /* ---- de onde vem o dinheiro ---- */
+  /* BL_POLITICA_ANUNCIO continua sendo impressa onde ela é informação e não
+     discurso: no próprio card de anúncio, em resultados.html, e na página de
+     estabelecimentos, onde quem lê está decidindo se compra o slot. */
+  document.getElementById("faq-afiliado").textContent = BL_AVISO_AFILIADO;
+})();
+</script>
+</body>
+</html>

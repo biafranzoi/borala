@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Destinos para você — Boralá!</title>
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/design-system.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<div data-header></div>
+
+<main>
+  <!-- ---------------- BUSCA ATIVA ---------------- -->
+  <section class="hero hero--sm">
+    <img class="hero__bg" src="assets/img/band.jpg" alt="">
+    <div class="container hero__inner">
+      <h1 style="font-size: var(--text-2xl)" id="titulo-resultados">Buscando destinos…</h1>
+      <p class="mt-2" id="resumo-busca"></p>
+
+      <!-- Mesma hierarquia da home: origem e tempo na frente, o resto
+           recolhido. Eram cinco caixas de seleção disputando atenção com
+           o painel de filtros logo abaixo. -->
+      <form class="quiz mt-6" id="quiz">
+        <div class="quiz__line">
+          <span>Saindo de</span>
+          <select class="select select--inline" name="origem" aria-label="Cidade de origem"></select>
+          <span>e viajando</span>
+          <select class="select select--inline" name="tempo" aria-label="Tempo máximo de viagem"></select>
+          <button class="btn" type="submit">Atualizar busca <span data-icone="busca" data-icone-classe="icon--sm"></span></button>
+        </div>
+
+        <details class="quiz__mais">
+          <summary>
+            <span data-icone="filtros" data-icone-classe="icon--sm"></span>
+            <span>Ajustar companhia, região e clima</span>
+            <b class="quiz__resumo" id="quiz-resumo"></b>
+          </summary>
+          <div class="quiz__line mt-5">
+            <span>Com</span>
+            <select class="select select--inline" name="pessoas" aria-label="Quantidade de pessoas"></select>
+            <span>para um destino</span>
+            <select class="select select--inline" name="onde" aria-label="Onde"></select>
+            <span>em um clima de</span>
+            <select class="select select--inline" name="clima" aria-label="Clima da viagem"></select>
+          </div>
+        </details>
+      </form>
+    </div>
+  </section>
+
+  <!-- ---------------- RESULTADOS ---------------- -->
+  <section class="section">
+    <div class="container">
+      <div class="grid grid--sidebar">
+
+        <!-- ---- painel de filtros ---- -->
+        <aside class="card blob-tl blob--sm card--sm sticky-col filtros" id="painel-filtros" aria-label="Filtros da busca">
+          <div class="filtros__topo">
+            <div class="cluster gap-3">
+              <span data-icone="filtros" style="color: var(--c-brand-600)"></span>
+              <h4>Refinar resultados</h4>
+            </div>
+            <button class="btn-icon btn-icon--sm filtros__fechar" type="button" id="fechar-filtros" aria-label="Fechar filtros">
+              <span data-icone="fechar" data-icone-classe="icon--sm"></span>
+            </button>
+          </div>
+
+          <!-- busca por nome, estado ou experiência -->
+          <div class="filtros__busca">
+            <span data-icone="busca" data-icone-classe="icon--sm"></span>
+            <input class="input" type="search" id="filtro-texto" autocomplete="off"
+                   placeholder="Praia, trilha, Alagoas…" aria-label="Buscar por nome, estado ou experiência">
+            <button class="filtros__limpar-busca hidden" type="button" id="limpar-texto" aria-label="Limpar a busca por texto">
+              <span data-icone="fechar" data-icone-classe="icon--sm"></span>
+            </button>
+          </div>
+
+          <!-- orçamento -->
+          <details class="filtros__grupo" id="grupo-preco" open>
+            <summary>Orçamento por pessoa <span class="filtros__marca hidden" id="marca-preco">1</span></summary>
+            <div class="filtros__corpo">
+              <div class="faixa" id="faixa-preco">
+                <div class="faixa__valores">
+                  <span id="preco-rotulo-min">—</span>
+                  <span id="preco-rotulo-max">—</span>
+                </div>
+                <div class="faixa__controle">
+                  <span class="faixa__trilha"></span>
+                  <span class="faixa__fill" id="faixa-fill"></span>
+                  <input type="range" id="preco-min" aria-label="Orçamento mínimo por pessoa">
+                  <input type="range" id="preco-max" aria-label="Orçamento máximo por pessoa">
+                </div>
+                <p class="filtros__nota">Estimativa com hospedagem, passeios e alimentação.</p>
+              </div>
+            </div>
+          </details>
+
+          <!-- avaliação -->
+          <details class="filtros__grupo" id="grupo-nota" open>
+            <summary>Avaliação dos viajantes <span class="filtros__marca hidden" id="marca-nota">1</span></summary>
+            <div class="filtros__corpo">
+              <div class="filtros__notas" id="filtro-nota"></div>
+            </div>
+          </details>
+
+          <!-- grupos montados a partir de BL_GRUPOS_FILTRO -->
+          <div id="filtros-grupos"></div>
+
+          <!-- curadoria: exclusivo de assinantes -->
+          <div id="filtro-verificados"></div>
+
+          <button class="btn btn--ghost btn--sm btn--block mt-6" type="button" id="limpar-filtros">Limpar filtros</button>
+        </aside>
+
+        <!-- ---- lista ---- -->
+        <div>
+          <div class="resultados__topo">
+            <div>
+              <h3 id="contagem" aria-live="polite">—</h3>
+              <p class="body-sm text-secondary" id="contagem-sub"></p>
+            </div>
+            <div class="cluster gap-3">
+              <button class="btn btn--sm filtros__abrir" type="button" id="abrir-filtros"
+                      aria-expanded="false" aria-controls="painel-filtros">
+                <span data-icone="filtros" data-icone-classe="icon--sm"></span>
+                Filtros <span class="filtros__marca hidden" id="marca-total">0</span>
+              </button>
+              <div class="resultados__ordem">
+                <div class="segmented" id="ordenacao">
+                  <button type="button" data-ordem="match" aria-pressed="true">Mais relevantes</button>
+                  <button type="button" data-ordem="nota" aria-pressed="false">Melhor avaliados</button>
+                  <button type="button" data-ordem="preco" aria-pressed="false">Menor preço</button>
+                  <button type="button" data-ordem="preco-desc" aria-pressed="false">Maior preço</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="aplicados mt-6 hidden" id="aplicados"></div>
+
+          <div class="grid grid--2 mt-8" id="lista"></div>
+
+          <div class="text-center mt-8 hidden" id="area-mais">
+            <button class="btn btn--lg" type="button" id="carregar-mais">Carregar mais destinos</button>
+            <p class="body-sm text-secondary mt-4" id="paginacao"></p>
+          </div>
+
+          <div id="upsell" class="mt-12"></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<div data-footer></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  BL.iniciar({ nav: "destinos", modo: "viajante" });
+
+  /* ---------------------------------------------------------------
+     Estado da tela: a busca do topo (quiz) e os filtros do painel.
+     Os dois vão para a URL, então um resultado filtrado é um link
+     que pode ser compartilhado e recarregado sem perder nada.
+     --------------------------------------------------------------- */
+
+  /* grupos de várias opções, na ordem em que aparecem no painel */
+  const GRUPOS = [
+    { chave: "tipos", forma: "check", aberto: true },
+    { chave: "duracoes", forma: "check", aberto: true },
+    { chave: "meses", forma: "chip", nota: "Marcado pela melhor época de cada destino." },
+    { chave: "temperaturas", forma: "check" },
+    { chave: "experiencias", forma: "check", limite: 6, nota: "Mostramos só destinos que têm tudo o que você marcar." },
+    { chave: "acessos", forma: "check", nota: "Tempo estimado saindo de uma capital. Exige todas as marcadas." },
+    { chave: "perfis", forma: "check", nota: "Exige todas as marcadas." }
+  ];
+
+  /* nome curto de cada grupo na URL, para o link não ficar ilegível */
+  const NA_URL = {
+    tipos: "tipo", duracoes: "dur", meses: "mes", temperaturas: "temp",
+    experiencias: "exp", acessos: "acesso", perfis: "perfil"
+  };
+
+  const p = BL.params();
+  const busca = {
+    pessoas: p.pessoas || "2",
+    onde: p.onde || "brasil",
+    clima: p.clima || "romance",
+    /* Sem origem no link, a busca não filtra por distância: quem chega por
+       um link direto não escolheu cidade nenhuma. */
+    origem: BL_ORIGENS.some(function (o) { return o.v === p.origem; }) ? p.origem : "",
+    tempo: BL_TEMPOS.some(function (t) { return t.v === p.tempo; }) ? p.tempo : "tudo"
+  };
+
+  const filtros = { ordem: "match" };
+  GRUPOS.forEach(function (g) { filtros[g.chave] = []; });
+  filtros.texto = "";
+  filtros.notaMin = null;
+  filtros.precoMin = null;
+  filtros.precoMax = null;
+  filtros.apenasVerificados = false;
+
+  let visiveis = 6;
+  let faixa = blFaixaDePreco(busca);
+
+  /* ---- ler os filtros que vieram na URL ---- */
+  (function lerURL() {
+    GRUPOS.forEach(function (g) {
+      const bruto = p[NA_URL[g.chave]];
+      if (!bruto) return;
+      const validos = BL_GRUPOS_FILTRO[g.chave].opcoes.map(function (o) { return o.v; });
+      filtros[g.chave] = bruto.split(",").filter(function (v) { return validos.indexOf(v) !== -1; });
+    });
+    if (p.q) filtros.texto = p.q;
+    if (p.nota && BL_NOTAS.some(function (o) { return o.v === p.nota; })) filtros.notaMin = Number(p.nota);
+    if (p.preco && /^\d+-\d+$/.test(p.preco)) {
+      const partes = p.preco.split("-").map(Number);
+      filtros.precoMin = Math.max(faixa.min, Math.min(partes[0], faixa.max));
+      filtros.precoMax = Math.min(faixa.max, Math.max(partes[1], faixa.min));
+    }
+    if (p.ver === "1") filtros.apenasVerificados = true;
+    if (["match", "nota", "preco", "preco-desc"].indexOf(p.ordem) !== -1) filtros.ordem = p.ordem;
+  })();
+
+  function gravarURL() {
+    const q = new URLSearchParams();
+    q.set("pessoas", busca.pessoas);
+    q.set("onde", busca.onde);
+    q.set("clima", busca.clima);
+    if (busca.origem) q.set("origem", busca.origem);
+    if (busca.tempo && busca.tempo !== "tudo") q.set("tempo", busca.tempo);
+    GRUPOS.forEach(function (g) {
+      if (filtros[g.chave].length) q.set(NA_URL[g.chave], filtros[g.chave].join(","));
+    });
+    if (filtros.texto) q.set("q", filtros.texto);
+    if (filtros.notaMin) q.set("nota", String(filtros.notaMin));
+    if (precoFiltrado()) q.set("preco", filtros.precoMin + "-" + filtros.precoMax);
+    if (filtros.apenasVerificados) q.set("ver", "1");
+    if (filtros.ordem !== "match") q.set("ordem", filtros.ordem);
+    history.replaceState(null, "", "resultados.html?" + q.toString());
+  }
+
+  /* O orçamento só conta como filtro quando a pessoa moveu alguma alça. */
+  function precoFiltrado() {
+    return (filtros.precoMin !== null && filtros.precoMin > faixa.min) ||
+           (filtros.precoMax !== null && filtros.precoMax < faixa.max);
+  }
+
+  function quantosFiltros() {
+    let n = GRUPOS.reduce(function (s, g) { return s + filtros[g.chave].length; }, 0);
+    if (filtros.texto) n++;
+    if (filtros.notaMin) n++;
+    if (precoFiltrado()) n++;
+    if (filtros.apenasVerificados) n++;
+    return n;
+  }
+
+  function mudou() {
+    visiveis = 6;
+    gravarURL();
+    render();
+  }
+
+  /* ---------------- quiz do topo ---------------- */
+  const quiz = document.getElementById("quiz");
+  function preencher(nome, opcoes, atual) {
+    const select = quiz.querySelector('select[name="' + nome + '"]');
+    select.innerHTML = opcoes.map(function (o) {
+      return '<option value="' + o.v + '"' + (o.v === atual ? " selected" : "") + ">" + o.label + "</option>";
+    }).join("");
+  }
+  preencher("pessoas", BL_OPCOES.pessoas, busca.pessoas);
+  preencher("onde", BL_OPCOES.onde, busca.onde);
+  preencher("clima", BL_OPCOES.clima, busca.clima);
+  /* "Escolher depois" existe porque dá para chegar aqui sem origem. */
+  preencher("origem", [{ v: "", label: "qualquer lugar" }].concat(BL_ORIGENS), busca.origem);
+  preencher("tempo", BL_TEMPOS, busca.tempo);
+
+  quiz.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const d = new FormData(quiz);
+    const trocouOnde = busca.onde !== d.get("onde");
+    busca.pessoas = d.get("pessoas");
+    busca.onde = d.get("onde");
+    busca.clima = d.get("clima");
+    busca.origem = d.get("origem");
+    busca.tempo = d.get("tempo");
+    /* Brasil e exterior têm faixas de preço muito diferentes: manter a
+       alça antiga esconderia todos os resultados da nova busca. */
+    if (trocouOnde) {
+      faixa = blFaixaDePreco(busca);
+      montarFaixa();
+    }
+    mudou();
+  });
+
+  /* ---------------- orçamento ---------------- */
+  const elMin = document.getElementById("preco-min");
+  const elMax = document.getElementById("preco-max");
+  const elFill = document.getElementById("faixa-fill");
+  const passo = 10;
+
+  function montarFaixa() {
+    [elMin, elMax].forEach(function (el) {
+      el.min = faixa.min;
+      el.max = faixa.max;
+      el.step = passo;
+    });
+    filtros.precoMin = faixa.min;
+    filtros.precoMax = faixa.max;
+    elMin.value = faixa.min;
+    elMax.value = faixa.max;
+    pintarFaixa();
+  }
+
+  function pintarFaixa() {
+    const vao = Math.max(1, faixa.max - faixa.min);
+    const a = (filtros.precoMin - faixa.min) / vao * 100;
+    const b = (filtros.precoMax - faixa.min) / vao * 100;
+    elFill.style.left = a + "%";
+    elFill.style.width = Math.max(0, b - a) + "%";
+    document.getElementById("preco-rotulo-min").textContent = BL.dinheiro(filtros.precoMin);
+    document.getElementById("preco-rotulo-max").textContent =
+      BL.dinheiro(filtros.precoMax) + (filtros.precoMax >= faixa.max ? "+" : "");
+    elMin.setAttribute("aria-valuetext", BL.dinheiro(filtros.precoMin));
+    elMax.setAttribute("aria-valuetext", BL.dinheiro(filtros.precoMax));
+  }
+
+  elMin.addEventListener("input", function () {
+    filtros.precoMin = Math.min(Number(elMin.value), filtros.precoMax - passo);
+    elMin.value = filtros.precoMin;
+    pintarFaixa();
+    mudou();
+  });
+  elMax.addEventListener("input", function () {
+    filtros.precoMax = Math.max(Number(elMax.value), filtros.precoMin + passo);
+    elMax.value = filtros.precoMax;
+    pintarFaixa();
+    mudou();
+  });
+
+  montarFaixa();
+  /* a URL pode ter trazido uma faixa mais estreita que a cheia */
+  if (p.preco && /^\d+-\d+$/.test(p.preco)) {
+    const partes = p.preco.split("-").map(Number);
+    filtros.precoMin = Math.max(faixa.min, Math.min(partes[0], faixa.max - passo));
+    filtros.precoMax = Math.min(faixa.max, Math.max(partes[1], filtros.precoMin + passo));
+    elMin.value = filtros.precoMin;
+    elMax.value = filtros.precoMax;
+    pintarFaixa();
+  }
+
+  /* ---------------- avaliação ---------------- */
+  const elNota = document.getElementById("filtro-nota");
+  BL_NOTAS.forEach(function (o) {
+    const b = BL.el('<button class="chip" type="button" aria-pressed="false">' +
+      BL.icone("estrela", "icon--sm") + o.label + ' <span class="filtros__n"></span></button>');
+    b.dataset.nota = o.v;
+    b.addEventListener("click", function () {
+      filtros.notaMin = filtros.notaMin === o.min ? null : o.min;
+      mudou();
+    });
+    elNota.appendChild(b);
+  });
+
+  /* ---------------- grupos de opções ---------------- */
+  const elGrupos = document.getElementById("filtros-grupos");
+
+  GRUPOS.forEach(function (g) {
+    const regra = BL_GRUPOS_FILTRO[g.chave];
+    const det = BL.el(
+      '<details class="filtros__grupo"' + (g.aberto ? " open" : "") + ' data-grupo="' + g.chave + '">' +
+        "<summary>" + regra.rotulo +
+          ' <span class="filtros__marca hidden">0</span></summary>' +
+        '<div class="filtros__corpo"></div>' +
+      "</details>"
+    );
+    const corpo = det.querySelector(".filtros__corpo");
+
+    if (g.forma === "chip") {
+      const grade = BL.el('<div class="filtros__meses"></div>');
+      regra.opcoes.forEach(function (o) {
+        const b = BL.el('<button class="chip" type="button" aria-pressed="false">' + o.label + "</button>");
+        b.dataset.valor = o.v;
+        b.addEventListener("click", function () { alternar(g.chave, o.v); });
+        grade.appendChild(b);
+      });
+      corpo.appendChild(grade);
+    } else {
+      regra.opcoes.forEach(function (o, i) {
+        const linha = BL.el(
+          '<div class="filtros__opcao">' +
+            '<label class="check"><input type="checkbox" value="' + o.v + '">' +
+            '<span class="check__box">' + BL.icone("check") + "</span>" +
+            "<span>" + o.label + "</span></label>" +
+            '<span class="filtros__n"></span>' +
+          "</div>"
+        );
+        if (g.limite && i >= g.limite) linha.hidden = true;
+        linha.querySelector("input").addEventListener("change", function () { alternar(g.chave, o.v); });
+        corpo.appendChild(linha);
+      });
+
+      /* lista longa começa curta, como nos sites de reserva */
+      if (g.limite && regra.opcoes.length > g.limite) {
+        const resto = regra.opcoes.length - g.limite;
+        const btn = BL.el('<button class="link caption filtros__ver-mais" type="button" aria-expanded="false">' +
+          "Ver mais " + resto + " opções</button>");
+        btn.addEventListener("click", function () {
+          const abrindo = btn.getAttribute("aria-expanded") === "false";
+          BL.$$(".filtros__opcao", corpo).forEach(function (linha, i) {
+            if (i >= g.limite) linha.hidden = !abrindo;
+          });
+          btn.setAttribute("aria-expanded", String(abrindo));
+          btn.textContent = abrindo ? "Ver menos" : "Ver mais " + resto + " opções";
+        });
+        corpo.appendChild(btn);
+      }
+    }
+
+    if (g.nota) corpo.appendChild(BL.el('<p class="filtros__nota">' + g.nota + "</p>"));
+    elGrupos.appendChild(det);
+  });
+
+  function alternar(grupo, valor) {
+    const atual = filtros[grupo];
+    const i = atual.indexOf(valor);
+    if (i === -1) atual.push(valor);
+    else atual.splice(i, 1);
+    mudou();
+  }
+
+  /* ---------------- busca por texto ---------------- */
+  const elTexto = document.getElementById("filtro-texto");
+  const elLimparTexto = document.getElementById("limpar-texto");
+  elTexto.value = filtros.texto;
+  elTexto.addEventListener("input", function () {
+    filtros.texto = elTexto.value;
+    mudou();
+  });
+  elLimparTexto.addEventListener("click", function () {
+    filtros.texto = "";
+    elTexto.value = "";
+    elTexto.focus();
+    mudou();
+  });
+
+  /* ---------------- curadoria (gratuito) ---------------- */
+  /* Era o único bloqueio premium desta página. Virou gratuito: filtrar
+     por local conferido é a resposta à pergunta que trouxe a pessoa até
+     aqui, e esconder isso escondia a melhor parte do produto. */
+  const elVerificados = document.getElementById("filtro-verificados");
+  {
+    elVerificados.innerHTML =
+      '<details class="filtros__grupo" open>' +
+        '<summary>Curadoria <span class="filtros__marca hidden" id="marca-ver">1</span></summary>' +
+        '<div class="filtros__corpo">' +
+          '<div class="filtros__opcao">' +
+            '<label class="check"><input type="checkbox" id="chk-verificados">' +
+            '<span class="check__box">' + BL.icone("check") + "</span>" +
+            "<span>Somente destinos verificados</span></label>" +
+            '<span class="filtros__n" id="n-verificados"></span>' +
+          "</div>" +
+          '<p class="filtros__nota">Destinos com locais checados pela nossa curadoria, com a data da checagem à vista.</p>' +
+        "</div>" +
+      "</details>";
+    const chk = document.getElementById("chk-verificados");
+    chk.checked = filtros.apenasVerificados;
+    chk.addEventListener("change", function () {
+      filtros.apenasVerificados = chk.checked;
+      mudou();
+    });
+  }
+
+  /* ---------------- limpar tudo ---------------- */
+  document.getElementById("limpar-filtros").addEventListener("click", function () {
+    GRUPOS.forEach(function (g) { filtros[g.chave] = []; });
+    filtros.texto = "";
+    filtros.notaMin = null;
+    filtros.apenasVerificados = false;
+    elTexto.value = "";
+    const chk = document.getElementById("chk-verificados");
+    if (chk) chk.checked = false;
+    filtros.precoMin = faixa.min;
+    filtros.precoMax = faixa.max;
+    elMin.value = faixa.min;
+    elMax.value = faixa.max;
+    pintarFaixa();
+    mudou();
+  });
+
+  /* ---------------- ordenação ---------------- */
+  BL.$$("#ordenacao button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      filtros.ordem = b.dataset.ordem;
+      gravarURL();
+      render();
+    });
+  });
+
+  /* ---------------- painel no mobile ---------------- */
+  /* No desktop o painel é fixo; abaixo de 1080px ele vira uma gaveta
+     aberta pelo botão "Filtros", para a lista não começar na metade da
+     página. O atributo `hidden` é controlado só por aqui. */
+  const aside = document.getElementById("painel-filtros");
+  const btnAbrir = document.getElementById("abrir-filtros");
+  const mq = window.matchMedia("(max-width: 1080px)");
+  let gavetaAberta = false;
+
+  function aplicarGaveta() {
+    if (mq.matches) {
+      aside.hidden = !gavetaAberta;
+      btnAbrir.setAttribute("aria-expanded", String(gavetaAberta));
+    } else {
+      aside.hidden = false;
+      btnAbrir.setAttribute("aria-expanded", "false");
+    }
+  }
+  btnAbrir.addEventListener("click", function () {
+    gavetaAberta = !gavetaAberta;
+    aplicarGaveta();
+    if (gavetaAberta) elTexto.focus();
+  });
+  document.getElementById("fechar-filtros").addEventListener("click", function () {
+    gavetaAberta = false;
+    aplicarGaveta();
+    btnAbrir.focus();
+  });
+  if (mq.addEventListener) mq.addEventListener("change", aplicarGaveta);
+  else mq.addListener(aplicarGaveta);
+  aplicarGaveta();
+
+  /* ---------------- render ---------------- */
+  function rotulo(lista, valor) {
+    const achado = lista.find(function (o) { return o.v === valor; });
+    return achado ? achado.label : valor;
+  }
+
+  function marcar(el, n) {
+    if (!el) return;
+    el.textContent = n;
+    el.classList.toggle("hidden", !n);
+  }
+
+  /* Reflete o estado dos filtros nos controles e escreve, ao lado de cada
+     opção, quantos destinos ela ainda devolveria. */
+  function atualizarControles() {
+    const contagem = blContagemFiltros(busca, filtros);
+
+    GRUPOS.forEach(function (g) {
+      const det = elGrupos.querySelector('[data-grupo="' + g.chave + '"]');
+      const sel = filtros[g.chave];
+      marcar(det.querySelector(".filtros__marca"), sel.length);
+
+      if (g.forma === "chip") {
+        BL.$$(".chip", det).forEach(function (b) {
+          const v = b.dataset.valor;
+          const n = contagem[g.chave][v] || 0;
+          const marcado = sel.indexOf(v) !== -1;
+          b.setAttribute("aria-pressed", String(marcado));
+          b.disabled = !n && !marcado;
+          b.title = n + (n === 1 ? " destino" : " destinos");
+        });
+      } else {
+        BL.$$(".filtros__opcao", det).forEach(function (linha) {
+          const input = linha.querySelector("input");
+          const n = contagem[g.chave][input.value] || 0;
+          const marcado = sel.indexOf(input.value) !== -1;
+          input.checked = marcado;
+          input.disabled = !n && !marcado;
+          linha.classList.toggle("is-vazia", !n);
+          linha.querySelector(".filtros__n").textContent = n;
+        });
+      }
+    });
+
+    BL.$$("#filtro-nota .chip").forEach(function (b) {
+      const o = BL_NOTAS.find(function (x) { return x.v === b.dataset.nota; });
+      const n = contagem.notaMin[b.dataset.nota] || 0;
+      const marcado = filtros.notaMin === o.min;
+      b.setAttribute("aria-pressed", String(marcado));
+      b.disabled = !n && !marcado;
+      b.querySelector(".filtros__n").textContent = n;
+    });
+    marcar(document.getElementById("marca-nota"), filtros.notaMin ? 1 : 0);
+    marcar(document.getElementById("marca-preco"), precoFiltrado() ? 1 : 0);
+    marcar(document.getElementById("marca-total"), quantosFiltros());
+    marcar(document.getElementById("marca-ver"), filtros.apenasVerificados ? 1 : 0);
+
+    const nVer = document.getElementById("n-verificados");
+    if (nVer) nVer.textContent = contagem.verificados;
+
+    elLimparTexto.classList.toggle("hidden", !filtros.texto);
+
+    BL.$$("#ordenacao button").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.ordem === filtros.ordem));
+    });
+  }
+
+  /* Pílulas do que está aplicado, com o X para remover uma a uma. */
+  function atualizarAplicados() {
+    const elA = document.getElementById("aplicados");
+    const pilulas = [];
+
+    if (filtros.texto) pilulas.push({ texto: '"' + filtros.texto + '"', tirar: function () { filtros.texto = ""; elTexto.value = ""; } });
+    if (precoFiltrado()) {
+      pilulas.push({
+        texto: BL.dinheiro(filtros.precoMin) + " – " + BL.dinheiro(filtros.precoMax),
+        tirar: function () {
+          filtros.precoMin = faixa.min; filtros.precoMax = faixa.max;
+          elMin.value = faixa.min; elMax.value = faixa.max; pintarFaixa();
+        }
+      });
+    }
+    if (filtros.notaMin) {
+      pilulas.push({ texto: blRotuloFiltro("notaMin", String(filtros.notaMin)), tirar: function () { filtros.notaMin = null; } });
+    }
+    GRUPOS.forEach(function (g) {
+      filtros[g.chave].forEach(function (v) {
+        pilulas.push({ texto: blRotuloFiltro(g.chave, v), tirar: function () { alternarSilencioso(g.chave, v); } });
+      });
+    });
+    if (filtros.apenasVerificados) {
+      pilulas.push({
+        texto: "Verificados", tirar: function () {
+          filtros.apenasVerificados = false;
+          const chk = document.getElementById("chk-verificados");
+          if (chk) chk.checked = false;
+        }
+      });
+    }
+
+    elA.classList.toggle("hidden", !pilulas.length);
+    elA.innerHTML = "";
+    if (!pilulas.length) return;
+
+    elA.appendChild(BL.el('<span class="aplicados__titulo">Filtros aplicados:</span>'));
+    pilulas.forEach(function (pil) {
+      const b = BL.el('<button class="pill-filtro" type="button">' + pil.texto +
+        BL.icone("fechar", "icon--xs") + "</button>");
+      b.setAttribute("aria-label", "Remover filtro " + pil.texto);
+      b.addEventListener("click", function () { pil.tirar(); mudou(); });
+      elA.appendChild(b);
+    });
+    const limpar = BL.el('<button class="link caption" type="button">Limpar tudo</button>');
+    limpar.addEventListener("click", function () { document.getElementById("limpar-filtros").click(); });
+    elA.appendChild(limpar);
+  }
+
+  function alternarSilencioso(grupo, valor) {
+    const i = filtros[grupo].indexOf(valor);
+    if (i !== -1) filtros[grupo].splice(i, 1);
+  }
+
+  /* Quando não sobra nada, aponta o filtro que está cortando mais — é
+     mais útil que oferecer só "limpar tudo". */
+  /* Slot de anúncio: card do estabelecimento que paga, com rótulo e com a
+     política escrita ao lado — não é um destino recomendado. */
+  function cardAnuncio(campanha) {
+    if (!campanha) return "";
+    const local = blBuscarEstabelecimento(campanha.estabelecimentoId);
+    const destino = blBuscarDestino(campanha.destinoId);
+    if (!local || !destino) return "";
+    return '<article class="card dcard dcard--ad">' +
+      '<div class="dcard__media">' +
+        '<img src="' + local.fotos[0] + '" alt="' + local.nome + '" loading="lazy">' +
+        '<span class="tag tag--overlay">' + BL.icone("alta", "icon--sm") + "Anúncio</span>" +
+      "</div>" +
+      '<div class="dcard__body">' +
+        '<p class="caption strong text-secondary">' + local.tipo + " em " + destino.nome + "</p>" +
+        '<h3 class="dcard__title mt-2">' + local.nome + "</h3>" +
+        '<p class="body-sm text-secondary mt-2">' + campanha.chamada + "</p>" +
+        (local.verificado
+          ? '<p class="caption mt-2">' + BL.icone("check-circulo", "icon--sm") + local.selo + "</p>"
+          : "") +
+        '<div class="dcard__foot">' +
+          '<a class="btn btn--sm btn--outline" href="estabelecimento.html?id=' + local.id + '">Ver o local ' + BL.icone("seta", "icon--sm") + "</a>" +
+        "</div>" +
+        '<p class="caption text-tertiary mt-4">Posição paga. Não altera a ordem dos resultados nem a nota do local.</p>' +
+      "</div></article>";
+  }
+
+  function sugestaoDeFolga() {
+    const candidatos = [];
+    GRUPOS.forEach(function (g) {
+      if (!filtros[g.chave].length) return;
+      const copia = Object.assign({}, filtros);
+      copia[g.chave] = [];
+      candidatos.push({
+        nome: BL_GRUPOS_FILTRO[g.chave].rotulo,
+        total: blFiltrarDestinos(busca, copia).length,
+        tirar: function () { filtros[g.chave] = []; }
+      });
+    });
+    if (precoFiltrado()) {
+      const copia = Object.assign({}, filtros, { precoMin: faixa.min, precoMax: faixa.max });
+      candidatos.push({
+        nome: "Orçamento", total: blFiltrarDestinos(busca, copia).length,
+        tirar: function () {
+          filtros.precoMin = faixa.min; filtros.precoMax = faixa.max;
+          elMin.value = faixa.min; elMax.value = faixa.max; pintarFaixa();
+        }
+      });
+    }
+    if (filtros.notaMin) {
+      const copia = Object.assign({}, filtros, { notaMin: null });
+      candidatos.push({ nome: "Avaliação dos viajantes", total: blFiltrarDestinos(busca, copia).length, tirar: function () { filtros.notaMin = null; } });
+    }
+    if (filtros.texto) {
+      const copia = Object.assign({}, filtros, { texto: "" });
+      candidatos.push({
+        nome: "Busca por texto", total: blFiltrarDestinos(busca, copia).length,
+        tirar: function () { filtros.texto = ""; elTexto.value = ""; }
+      });
+    }
+    /* O tempo de viagem vive em `busca`, não em `filtros`, então entra na
+       lista de folga à mão — e é o que mais zera resultado, porque o
+       catálogo ainda tem poucos destinos perto de cada origem. */
+    if (busca.origem && busca.tempo && busca.tempo !== "tudo") {
+      const copiaBusca = Object.assign({}, busca, { tempo: "tudo" });
+      candidatos.push({
+        nome: "Tempo de viagem",
+        total: blFiltrarDestinos(copiaBusca, filtros).length,
+        tirar: function () {
+          busca.tempo = "tudo";
+          const sel = quiz.querySelector('select[name="tempo"]');
+          if (sel) sel.value = "tudo";
+        }
+      });
+    }
+    candidatos.sort(function (a, b) { return b.total - a.total; });
+    return candidatos.length && candidatos[0].total ? candidatos[0] : null;
+  }
+
+  function render() {
+    atualizarControles();
+    atualizarAplicados();
+
+    const lista = blFiltrarDestinos(busca, filtros);
+
+    /* O anúncio NÃO entra no ranking. Antes esta função jogava o parceiro
+       pagante para a primeira posição, o que contradizia a promessa de
+       imparcialidade da página de preços. Agora ele é um slot separado,
+       rotulado, no máximo um por página, e só aparece quando o destino
+       dele passa pela busca — senão seria anúncio fora de contexto. */
+    const campanha = blAnuncioPara(lista);
+
+    const total = lista.length;
+    const naBusca = blFiltrarDestinos(busca, {}).length;
+    const nFiltros = quantosFiltros();
+
+    document.getElementById("titulo-resultados").textContent =
+      naBusca + (naBusca === 1 ? " destino combina" : " destinos combinam") + " com você";
+    /* A origem e o tempo entram no resumo porque sao o recorte da busca:
+       sem eles a pessoa nao entende por que um destino sumiu da lista. */
+    const origemAtual = BL_ORIGENS.filter(function (o) { return o.v === busca.origem; })[0];
+    const tempoAtual = BL_TEMPOS.filter(function (t) { return t.v === busca.tempo; })[0];
+    document.getElementById("resumo-busca").textContent =
+      "Resultados para " + rotulo(BL_OPCOES.pessoas, busca.pessoas).replace("+ ", "") +
+      " · " + rotulo(BL_OPCOES.onde, busca.onde) +
+      " · clima de " + rotulo(BL_OPCOES.clima, busca.clima) +
+      (origemAtual ? " · saindo de " + origemAtual.label : "") +
+      (origemAtual && tempoAtual && tempoAtual.max !== Infinity ? " · " + tempoAtual.curto : "");
+
+    /* o fecho do bloco recolhido diz o que está selecionado lá dentro */
+    const elResumoQuiz = document.getElementById("quiz-resumo");
+    if (elResumoQuiz) {
+      elResumoQuiz.textContent = rotulo(BL_OPCOES.pessoas, busca.pessoas).replace("+ ", "") +
+        " · " + rotulo(BL_OPCOES.onde, busca.onde) +
+        " · clima de " + rotulo(BL_OPCOES.clima, busca.clima);
+    }
+
+    document.getElementById("contagem").textContent =
+      total + (total === 1 ? " destino encontrado" : " destinos encontrados");
+    document.getElementById("contagem-sub").textContent = nFiltros
+      ? "De " + naBusca + " desta busca, com " + nFiltros + (nFiltros === 1 ? " filtro aplicado" : " filtros aplicados")
+      : "Ordenados pelo quanto combinam com a sua busca";
+
+    const elLista = document.getElementById("lista");
+    if (!total) {
+      const folga = sugestaoDeFolga();
+      elLista.innerHTML =
+        '<div class="empty" style="grid-column: 1 / -1">' +
+          '<span class="icon-tile">' + BL.icone("busca", "icon--lg") + "</span>" +
+          "<h3>Nenhum destino com esses filtros</h3>" +
+          '<p class="text-secondary measure">' +
+            (folga
+              ? "Sem o filtro “" + folga.nome + "”, " + folga.total +
+                (folga.total === 1 ? " destino aparece" : " destinos aparecem") + " nesta busca."
+              : "Tente ampliar o orçamento ou mudar o clima da viagem lá em cima.") +
+          "</p>" +
+          '<div class="cluster gap-3 center">' +
+            (folga ? '<button class="btn" type="button" id="aliviar">Remover “' + folga.nome + "”</button>" : "") +
+            '<button class="btn btn--outline" type="button" id="limpar-vazio">Limpar filtros</button>' +
+          "</div>" +
+        "</div>";
+      const bt = document.getElementById("aliviar");
+      if (bt) bt.addEventListener("click", function () { folga.tirar(); mudou(); });
+      document.getElementById("limpar-vazio").addEventListener("click", function () {
+        document.getElementById("limpar-filtros").click();
+      });
+    } else {
+      const cards = lista.slice(0, visiveis).map(function (d) {
+        /* a origem vai junto para o card poder dizer "3h de estrada" */
+        return BL.cardDestino(d, { origem: busca.origem });
+      });
+      /* Entra depois do terceiro resultado: visível, mas sem roubar o
+         lugar de quem ganhou no match. */
+      if (campanha) cards.splice(Math.min(3, cards.length), 0, cardAnuncio(campanha));
+      elLista.innerHTML = cards.join("");
+      BL.ligarSalvar(elLista);
+    }
+
+    const area = document.getElementById("area-mais");
+    area.classList.toggle("hidden", total <= visiveis);
+    document.getElementById("paginacao").textContent =
+      "Mostrando " + Math.min(visiveis, total) + " de " + total + " destinos";
+
+    /* faixa de upsell só para quem ainda não assina */
+    const elUpsell = document.getElementById("upsell");
+    /* O upsell não pode mais vender curadoria nem filtro: os dois são
+       gratuitos. O que sobra de verdade é viagem em grupo. */
+    elUpsell.innerHTML = BL.premium() ? "" :
+      '<div class="upsell">' +
+        '<div class="upsell__copy">' +
+          '<span class="badge badge--premium" style="align-self:flex-start">' + BL.icone("medalha", "icon--sm") + "Premium</span>" +
+          "<h3>Vai viajar com mais gente?</h3>" +
+          '<p class="body-sm text-secondary">Convide até 10 pessoas, votem no destino, dividam os custos e acompanhem o checklist no mesmo lugar. Depois, montem o álbum da viagem.</p>' +
+        "</div>" +
+        '<div class="upsell__cta">' +
+          '<div class="upsell__price"><span data-preco="anual" data-preco-campo="equivalente"></span><span>/mês</span></div>' +
+          '<a class="btn btn--lg" href="premium.html?origem=resultados">Ver os planos ' + BL.icone("seta", "icon--sm") + "</a>" +
+          '<span class="caption text-secondary">no anual · passe de 30 dias por <span data-preco="passe"></span></span>' +
+        "</div>" +
+      "</div>";
+    BL.preencherPrecos(elUpsell);
+  }
+
+  document.getElementById("carregar-mais").addEventListener("click", function () {
+    visiveis += 6;
+    render();
+  });
+
+  gravarURL();
+  render();
+})();
+</script>
+</body>
+</html>

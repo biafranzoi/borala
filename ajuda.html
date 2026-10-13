@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Central de ajuda — Boralá!</title>
+<meta name="description" content="Dúvidas frequentes sobre busca de destinos, conta, assinatura premium e cadastro de estabelecimentos.">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/design-system.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+<div data-header></div>
+
+<main id="conteudo">
+  <section class="hero hero--sm">
+    <img class="hero__bg" src="assets/img/band.jpg" alt="">
+    <div class="container hero__inner">
+      <span class="tag tag--overlay">Central de ajuda</span>
+      <h1 class="mt-4">Como podemos ajudar?</h1>
+      <p class="hero__lead">Busque pela sua dúvida ou fale com a gente. Respondemos em até 48 horas — assinantes premium, em até 24.</p>
+
+      <div class="card on-light mt-8" style="max-width: 560px; padding: var(--space-4)">
+        <label class="visually-hidden" for="busca-ajuda">Buscar na ajuda</label>
+        <div class="cluster gap-3">
+          <span data-icone="busca" style="color: var(--c-brand-600)"></span>
+          <input class="input" id="busca-ajuda" type="search" placeholder="Ex.: cancelar assinatura" style="border: none; flex: 1; min-height: 40px">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="grid grid--aside">
+        <div>
+          <div class="cluster gap-2" id="filtros-ajuda" role="group" aria-label="Filtrar por assunto"></div>
+
+          <div class="stack gap-4 mt-8" id="lista-ajuda"></div>
+
+          <div class="empty hidden" id="vazio-ajuda">
+            <span class="icon-tile"><span data-icone="busca" data-icone-classe="icon--lg"></span></span>
+            <h3>Nenhuma resposta para essa busca</h3>
+            <p class="body-sm text-secondary measure">Tente outras palavras ou fale com a gente pelo formulário ao lado.</p>
+          </div>
+        </div>
+
+        <aside class="stack gap-4 sticky-col">
+          <div class="card blob-tr" id="contato">
+            <h3 class="title-lg">Fale conosco</h3>
+            <p class="body-sm text-secondary mt-2">Não achou o que precisava? Conte o que aconteceu.</p>
+
+            <form class="stack gap-5 mt-6" id="form-contato">
+              <div class="field">
+                <label class="field__label" for="contato-assunto">Assunto</label>
+                <select class="select" id="contato-assunto">
+                  <option>Dúvida sobre um destino</option>
+                  <option>Minha conta</option>
+                  <option>Assinatura premium</option>
+                  <option>Cadastro de estabelecimento</option>
+                  <option>Outro assunto</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="contato-email">Seu e-mail</label>
+                <input class="input" id="contato-email" type="email" required placeholder="voce@email.com">
+              </div>
+              <div class="field">
+                <label class="field__label" for="contato-msg">Mensagem</label>
+                <textarea class="textarea" id="contato-msg" required placeholder="Descreva sua dúvida com o máximo de detalhes."></textarea>
+              </div>
+              <button class="btn btn--block" type="submit">Enviar mensagem</button>
+            </form>
+          </div>
+
+          <div class="card card--brand-subtle">
+            <h4>Prefere e-mail?</h4>
+            <p class="body-sm mt-3">Viajantes: <strong>ajuda@borala.com.br</strong></p>
+            <p class="body-sm mt-2">Estabelecimentos: <strong>parceiros@borala.com.br</strong></p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div data-footer></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  BL.iniciar({ nav: "" });
+
+  const ASSUNTOS = ["Todos", "Busca", "Conta", "Premium", "Estabelecimentos"];
+
+  const PERGUNTAS = [
+    { assunto: "Busca", p: "Preciso criar conta para buscar destinos?",
+      r: "Não. A busca, os filtros e os locais verificados são abertos. A conta só é necessária para salvar destinos e usar as funcionalidades premium." },
+    { assunto: "Busca", p: "De onde vêm as estimativas de preço?",
+      r: "São valores médios por pessoa para o período de noites indicado, considerando hospedagem e passeios. Servem para comparar destinos entre si, não como cotação fechada." },
+    { assunto: "Busca", p: "Vocês vendem passagem ou pacote?",
+      r: "Não vendemos nada direto. Na ficha do destino existem links para parceiros de passagem, hospedagem e passeios: se você reservar por ali, recebemos comissão do parceiro, o preço para você é o mesmo e a ordem dos destinos não muda por isso. Reservar por fora funciona igual." },
+    { assunto: "Busca", p: "Como o percentual de match é calculado?",
+      r: "Cruzamos o clima da viagem que você escolheu, a região, a companhia e o perfil do destino. Quanto mais critérios batem, maior o percentual." },
+    { assunto: "Conta", p: "Como altero meu nome ou e-mail?",
+      r: "Entre na sua conta e abra a aba \"Dados da conta\". As alterações valem imediatamente." },
+    { assunto: "Conta", p: "Esqueci minha senha, e agora?",
+      r: "Na tela de entrar, use a opção de recuperação e enviaremos um link para o e-mail cadastrado." },
+    { assunto: "Conta", p: "Como excluo minha conta?",
+      r: "Em \"Dados da conta\" existe a opção de encerrar. Os destinos salvos e os álbuns são removidos junto." },
+    { assunto: "Premium", p: "O que muda com o Premium?",
+      r: "Viagens coletivas com votação de destino, álbum compartilhável, avaliações de assinantes, alertas de preço e suporte prioritário." },
+    { assunto: "Premium", p: "Qual a diferença entre o passe e a assinatura?",
+      r: "O passe de viagem dá os mesmos recursos por 30 dias e termina sozinho, sem precisar cancelar. A assinatura renova, mensal ou anual, e custa menos por mês." },
+    { assunto: "Premium", p: "Posso cancelar quando quiser?",
+      r: "Sim. O acesso continua até o fim do período já pago e não há multa nem fidelidade." },
+    { assunto: "Premium", p: "O que significa um destino verificado?",
+      r: "Nossa curadoria confere hospedagens, restaurantes e passeios antes de recomendar, e a data da última checagem fica visível na ficha do local. Ver os verificados é gratuito." },
+    { assunto: "Premium", p: "Quantas pessoas posso convidar numa viagem coletiva?",
+      r: "Até 10 pessoas por viagem. Só quem organiza precisa ser assinante." },
+    { assunto: "Estabelecimentos", p: "Como cadastro meu estabelecimento?",
+      r: "Pelo formulário na página para estabelecimentos. A curadoria responde em até 5 dias úteis." },
+    { assunto: "Estabelecimentos", p: "Quanto custa anunciar?",
+      r: "Aparecer na ficha do destino é gratuito, e a checagem também. O plano Pro custa R$ 89 por mês (ou R$ 890 por ano) e dá fotos sem limite, relatório e resposta às avaliações. O Destaque, que é o slot de anúncio, custa R$ 399 por mês — ou R$ 6 por contato recebido, com teto mensal." },
+    { assunto: "Estabelecimentos", p: "Pagar coloca meu local no topo dos resultados?",
+      r: "Não. O anúncio aparece num slot separado e rotulado, no máximo um por página, e fica fora do cálculo de match: ele não altera a ordem dos resultados, nem a nota, nem as avaliações." },
+    { assunto: "Estabelecimentos", p: "Como funciona o selo de verificado?",
+      r: "Conferimos documento, endereço, funcionamento e reputação pública, e falamos com parceiros locais, com visita presencial por amostragem. O selo mostra a data da checagem e expira em 12 meses. A checagem é gratuita e não depende do plano que você assina." }
+  ];
+
+  let filtro = "Todos";
+  let termo = "";
+
+  const elFiltros = document.getElementById("filtros-ajuda");
+  const elLista = document.getElementById("lista-ajuda");
+  const elVazio = document.getElementById("vazio-ajuda");
+
+  function render() {
+    elFiltros.innerHTML = ASSUNTOS.map(function (a) {
+      return '<button class="chip" type="button" aria-pressed="' + (a === filtro) + '" data-assunto="' + a + '">' + a + "</button>";
+    }).join("");
+    BL.$$("[data-assunto]", elFiltros).forEach(function (b) {
+      b.addEventListener("click", function () { filtro = b.dataset.assunto; render(); });
+    });
+
+    const busca = termo.trim().toLowerCase();
+    const lista = PERGUNTAS.filter(function (q) {
+      const bateAssunto = filtro === "Todos" || q.assunto === filtro;
+      const bateTermo = !busca || (q.p + " " + q.r).toLowerCase().indexOf(busca) !== -1;
+      return bateAssunto && bateTermo;
+    });
+
+    elVazio.classList.toggle("hidden", lista.length > 0);
+    elLista.innerHTML = lista.map(function (q) {
+      return "<details class='card card--flat' style='padding: 0'>" +
+        "<summary style='display:flex; align-items:center; justify-content:space-between; gap: var(--space-4); min-height: var(--target-min); padding: var(--space-5); font-weight: var(--weight-bold); font-size: var(--text-sm); cursor: pointer; list-style: none'>" +
+          "<span>" + q.p + "</span>" +
+          "<span class='tag tag--neutral'>" + q.assunto + "</span>" +
+        "</summary>" +
+        "<p class='body-sm text-secondary' style='padding: 0 var(--space-5) var(--space-5)'>" + q.r + "</p>" +
+        "</details>";
+    }).join("");
+  }
+
+  document.getElementById("busca-ajuda").addEventListener("input", function (e) {
+    termo = e.target.value;
+    render();
+  });
+
+  render();
+
+  document.getElementById("form-contato").addEventListener("submit", function (e) {
+    e.preventDefault();
+    e.target.reset();
+    BL.toast("Mensagem enviada! Respondemos no seu e-mail.", "sucesso");
+  });
+})();
+</script>
+</body>
+</html>

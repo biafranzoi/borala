@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Álbuns e comunidade — Boralá!</title>
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/design-system.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<div data-header></div>
+
+<main>
+  <section class="hero hero--sm">
+    <img class="hero__bg" src="assets/img/maragogi.jpg" alt="">
+    <div class="container hero__inner">
+      <span class="chip chip--outline"><span data-icone="camera" data-icone-classe="icon--sm"></span> Álbum e comunidade</span>
+      <h1 class="mt-4">Suas viagens viram histórias</h1>
+      <p class="hero__lead">Monte o álbum de cada viagem, compartilhe por link com quem foi junto e publique no feed para ajudar outros viajantes.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="grid grid--aside">
+
+        <!-- feed da comunidade (aberto a todos) -->
+        <div>
+          <div class="cluster between gap-4">
+            <div>
+              <h2>Feed da comunidade</h2>
+              <p class="body-sm text-secondary mt-2">Relatos de quem viajou usando o Boralá!.</p>
+            </div>
+            <div class="segmented" id="filtro-feed">
+              <button type="button" aria-pressed="true" data-filtro="todos">Todos</button>
+              <button type="button" aria-pressed="false" data-filtro="assinantes">Só assinantes</button>
+            </div>
+          </div>
+
+          <div class="stack gap-8 mt-8" id="feed"></div>
+        </div>
+
+        <!-- meu álbum (premium) -->
+        <aside id="area-album"></aside>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<div data-footer></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  BL.iniciar({ nav: "comunidade", modo: "viajante" });
+
+  /* ---------------- feed ---------------- */
+  let filtro = "todos";
+  const elFeed = document.getElementById("feed");
+
+  function renderFeed() {
+    const lista = BL_FEED.filter(function (post) {
+      return filtro === "todos" || post.premium;
+    });
+
+    elFeed.innerHTML = lista.map(function (post, i) {
+      const id = "post-" + i;
+      const curtido = BL.curtido(id);
+      return '<article class="post">' +
+        '<div class="post__head">' +
+          '<img class="avatar" src="' + post.avatar + '" alt="">' +
+          "<div><strong>" + post.autor + "</strong>" +
+            (post.premium ? ' <span class="tag caption">' + BL.icone("medalha", "icon--sm") + "assinante</span>" : "") +
+            '<p class="caption text-secondary">' + BL.icone("pino", "icon--sm") + " " + post.destino + "</p></div>" +
+        "</div>" +
+        '<div class="post__media"><img src="' + post.foto + '" alt="" loading="lazy"></div>' +
+        '<div class="post__body">' +
+          "<p>" + post.texto + "</p>" +
+          '<div class="post__actions">' +
+            '<button type="button" data-curtir="' + id + '" aria-pressed="' + curtido + '">' +
+              BL.icone("coracao", "icon--sm") + '<span data-contador>' + (post.curtidas + (curtido ? 1 : 0)) + "</span></button>" +
+            "<span>" + BL.icone("balao", "icon--sm") + " " + post.comentarios + "</span>" +
+            '<button type="button" data-compartilhar>' + BL.icone("compartilhar", "icon--sm") + " Compartilhar</button>" +
+          "</div>" +
+        "</div></article>";
+    }).join("");
+
+    BL.$$("[data-curtir]", elFeed).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const id = btn.getAttribute("data-curtir");
+        const agora = BL.alternarCurtida(id);
+        const contador = btn.querySelector("[data-contador]");
+        contador.textContent = Number(contador.textContent) + (agora ? 1 : -1);
+        btn.setAttribute("aria-pressed", agora);
+      });
+    });
+    BL.$$("[data-compartilhar]", elFeed).forEach(function (btn) {
+      btn.addEventListener("click", function () { BL.toast("Link do relato copiado!", "sucesso"); });
+    });
+  }
+
+  BL.$$("#filtro-feed button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      BL.$$("#filtro-feed button").forEach(function (x) { x.setAttribute("aria-pressed", "false"); });
+      b.setAttribute("aria-pressed", "true");
+      filtro = b.dataset.filtro;
+      renderFeed();
+    });
+  });
+  renderFeed();
+
+  /* ---------------- meu álbum (premium) ---------------- */
+  document.getElementById("area-album").innerHTML =
+    '<div data-premium data-premium-origem="album" ' +
+         'data-premium-titulo="Álbuns de viagem são para assinantes" ' +
+         'data-premium-texto="Monte álbuns com as fotos da viagem, compartilhe por link e publique no feed da comunidade.">' +
+      '<div class="card blob-tr sticky-col">' +
+        '<div class="cluster between">' +
+          "<h3>Meu álbum</h3>" +
+          '<span class="tag tag--success">' + BL.icone("medalha", "icon--sm") + "premium</span>" +
+        "</div>" +
+        "<h4 class=\"mt-16\">" + BL_ALBUM.titulo + "</h4>" +
+        '<p class="caption text-secondary">' + BL_ALBUM.periodo + " · " + BL_ALBUM.destinos.join(" e ") + "</p>" +
+
+        '<div class="album-grid mt-6">' + BL_ALBUM.fotos.map(function (f) {
+          return '<img src="' + f + '" alt="" loading="lazy">';
+        }).join("") + "</div>" +
+
+        '<button class="btn btn--outline btn--sm btn--block mt-6" type="button" id="add-fotos">' +
+          BL.icone("mais", "icon--sm") + " Adicionar fotos</button>" +
+
+        '<hr class="divider mt-6">' +
+
+        '<div class="stack gap-4 mt-6">' +
+          '<label class="switch"><input type="checkbox" id="publico"><span class="switch__track"></span>' +
+            "<span>Publicar no feed da comunidade</span></label>" +
+          '<button class="btn btn--block" type="button" id="compartilhar-album">' +
+            BL.icone("compartilhar", "icon--sm") + " Compartilhar por link</button>" +
+        "</div>" +
+
+        '<div class="card card--brand-subtle card--sm mt-6">' +
+          '<p class="caption"><strong>Dica:</strong> álbuns publicados aparecem no feed e ajudam outras pessoas a decidir o destino — e costumam render convites para viagens coletivas.</p>' +
+        "</div>" +
+      "</div>" +
+    "</div>";
+
+  BL.aplicarBloqueios();
+
+  const btnAdd = document.getElementById("add-fotos");
+  if (btnAdd) btnAdd.addEventListener("click", function () { BL.toast("No protótipo o upload é só demonstrativo."); });
+
+  const btnShare = document.getElementById("compartilhar-album");
+  if (btnShare) {
+    btnShare.addEventListener("click", function () {
+      const link = location.origin + "/album.html?id=nordeste-2024";
+      if (navigator.clipboard) navigator.clipboard.writeText(link).catch(function () {});
+      BL.toast("Link do álbum copiado!", "sucesso");
+    });
+  }
+
+  const chkPublico = document.getElementById("publico");
+  if (chkPublico) {
+    chkPublico.addEventListener("change", function (e) {
+      BL.toast(e.target.checked ? "Álbum publicado no feed da comunidade." : "Álbum voltou a ser privado.", e.target.checked ? "sucesso" : undefined);
+    });
+  }
+})();
+</script>
+</body>
+</html>

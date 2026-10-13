@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entrar — Boralá!</title>
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/design-system.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<div data-header></div>
+
+<main>
+  <section class="hero hero--sm">
+    <img class="hero__bg" src="assets/img/band.jpg" alt="">
+    <div class="container hero__inner">
+      <div class="grid grid--2" style="align-items: center">
+        <div>
+          <h1 id="titulo-auth">Entrar na conta</h1>
+          <p class="hero__lead" id="sub-auth">Salve destinos, acompanhe suas viagens e participe da comunidade de viajantes.</p>
+        </div>
+
+        <div class="card blob-bl" style="max-width: 460px; width: 100%; justify-self: end">
+          <div class="segmented" id="alternar-modo" style="width: 100%">
+            <button type="button" data-modo="entrar" class="grow" aria-pressed="true">Entrar</button>
+            <button type="button" data-modo="cadastro" class="grow" aria-pressed="false">Criar conta</button>
+          </div>
+
+          <form class="stack gap-4 mt-6" id="form-auth">
+            <div class="field hidden" id="campo-nome">
+              <label class="field__label" for="nome">Nome</label>
+              <input class="input" type="text" id="nome" name="nome" placeholder="Como podemos te chamar?" autocomplete="name">
+            </div>
+            <div class="field">
+              <label class="field__label" for="email">E-mail</label>
+              <input class="input" type="email" id="email" name="email" placeholder="voce@email.com" autocomplete="email" required>
+            </div>
+            <div class="field">
+              <label class="field__label" for="senha">Senha</label>
+              <input class="input" type="password" id="senha" name="senha" placeholder="••••••••" autocomplete="current-password" required>
+              <span class="field__hint">Protótipo: qualquer senha com 6+ caracteres funciona.</span>
+            </div>
+
+            <label class="check hidden" id="campo-termos">
+              <input type="checkbox" id="termos">
+              <span class="check__box"><span data-icone="check"></span></span>
+              <span class="caption">Li e aceito os termos de uso e a política de privacidade.</span>
+            </label>
+
+            <button class="btn btn--lg btn--block" type="submit" id="btn-enviar">Entrar</button>
+          </form>
+
+          <p class="caption text-secondary text-center mt-4" id="rodape-auth">
+            Ainda não tem conta? <button class="link caption" type="button" data-ir="cadastro" style="background:none;border:none;padding:0">Criar conta grátis</button>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--sm">
+    <div class="container">
+      <div class="grid grid--3">
+        <div class="card card--flat blob-tl">
+          <span class="icon-tile"><span data-icone="marcador" data-icone-classe="icon--lg"></span></span>
+          <h4 class="mt-4">Conta gratuita</h4>
+          <p class="body-sm text-secondary mt-2">Busca ilimitada de destinos, lista de salvos e acesso ao feed público da comunidade.</p>
+        </div>
+        <div class="card card--flat">
+          <span class="icon-tile"><span data-icone="escudo" data-icone-classe="icon--lg"></span></span>
+          <h4 class="mt-4">Dados no seu navegador</h4>
+          <p class="body-sm text-secondary mt-2">Este protótipo não tem back-end: o que você preencher fica só na memória do seu navegador.</p>
+        </div>
+        <div class="card card--flat blob-br">
+          <span class="icon-tile"><span data-icone="medalha" data-icone-classe="icon--lg"></span></span>
+          <h4 class="mt-4">Viajar com mais gente</h4>
+          <p class="body-sm text-secondary mt-2">Convide até 10 pessoas para votar no destino, dividir os custos e acompanhar o checklist. Quem é convidado entra sem assinar.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div data-footer></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  BL.iniciar({ nav: "" });
+
+  const p = BL.params();
+
+  /* Quem já está logado não tem o que fazer na tela de entrar. */
+  if (BL.logado() && !p.next) {
+    location.href = BL.inicioDoModo();
+    return;
+  }
+  let modo = p.modo === "cadastro" ? "cadastro" : "entrar";
+
+  /* Quem veio de uma tela específica volta para ela. Sem isso, quem acabou
+     de criar conta vai ver destinos — e não a aba premium da conta, que
+     para uma conta nova é só uma parede de bloqueio. */
+  function destino() {
+    if (p.next) return p.next;
+    return modo === "cadastro" ? "resultados.html" : "conta.html";
+  }
+
+  const titulo = document.getElementById("titulo-auth");
+  const sub = document.getElementById("sub-auth");
+  const campoNome = document.getElementById("campo-nome");
+  const campoTermos = document.getElementById("campo-termos");
+  const btnEnviar = document.getElementById("btn-enviar");
+  const rodape = document.getElementById("rodape-auth");
+
+  function aplicarModo(novo) {
+    modo = novo;
+    const cadastro = modo === "cadastro";
+    titulo.textContent = cadastro ? "Criar sua conta" : "Entrar na conta";
+    sub.textContent = cadastro
+      ? "Leva menos de um minuto. Depois é só escolher com quem você viaja e para onde."
+      : "Salve destinos, acompanhe suas viagens e participe da comunidade de viajantes.";
+    campoNome.classList.toggle("hidden", !cadastro);
+    campoTermos.classList.toggle("hidden", !cadastro);
+    document.getElementById("nome").required = cadastro;
+    btnEnviar.textContent = cadastro ? "Criar conta grátis" : "Entrar";
+    rodape.innerHTML = cadastro
+      ? 'Já tem conta? <button class="link caption" type="button" data-ir="entrar" style="background:none;border:none;padding:0">Entrar</button>'
+      : 'Ainda não tem conta? <button class="link caption" type="button" data-ir="cadastro" style="background:none;border:none;padding:0">Criar conta grátis</button>';
+    BL.$$("#alternar-modo button").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.dataset.modo === modo);
+    });
+    ligarTrocas();
+  }
+
+  function ligarTrocas() {
+    BL.$$("[data-ir]").forEach(function (b) {
+      b.onclick = function () { aplicarModo(b.dataset.ir); };
+    });
+  }
+
+  BL.$$("#alternar-modo button").forEach(function (b) {
+    b.addEventListener("click", function () { aplicarModo(b.dataset.modo); });
+  });
+
+  aplicarModo(modo);
+
+  document.getElementById("form-auth").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const senha = document.getElementById("senha").value;
+    if (senha.length < 6) { BL.toast("A senha precisa de pelo menos 6 caracteres."); return; }
+    if (modo === "cadastro" && !document.getElementById("termos").checked) {
+      BL.toast("É preciso aceitar os termos para criar a conta.");
+      return;
+    }
+    const email = document.getElementById("email").value;
+    const nome = document.getElementById("nome").value || email.split("@")[0];
+    BL.entrar(nome.charAt(0).toUpperCase() + nome.slice(1), email);
+    BL.toast(modo === "cadastro"
+      ? "Conta criada! Estes são os destinos mais procurados."
+      : "Bom te ver de novo!", "sucesso");
+    const ir = destino();
+    setTimeout(function () { location.href = ir; }, 700);
+  });
+})();
+</script>
+</body>
+</html>

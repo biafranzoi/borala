@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel do estabelecimento — Boralá!</title>
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/design-system.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<div data-header></div>
+
+<main>
+  <section class="hero hero--sm">
+    <img class="hero__bg" src="assets/img/curitiba.jpg" alt="">
+    <div class="container hero__inner">
+      <div class="cluster between gap-6" style="align-items: flex-end" id="topo-painel"></div>
+      <!-- com mais de um local, o painel precisa dizer de qual ele está falando -->
+      <div class="mt-8" id="troca-local"></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="grid grid--4" id="metricas"></div>
+
+      <div class="grid grid--aside mt-12" id="audiencia">
+        <div class="card blob-tl">
+          <div class="cluster between gap-4">
+            <div>
+              <h3>Visualizações nas buscas</h3>
+              <p class="body-sm text-secondary mt-2">Últimas 7 semanas, considerando buscas que combinam com o seu perfil de público.</p>
+            </div>
+            <span class="tag tag--success"><span data-icone="alta" data-icone-classe="icon--sm"></span> +42% no mês</span>
+          </div>
+          <div class="bars mt-8" id="grafico"></div>
+        </div>
+
+        <!-- Comparação entre mensalidade e cobrança por contato: o parceiro
+             precisa poder decidir com o número dele na mão. -->
+        <div class="card card--flat" id="comparacao-cobranca"></div>
+
+        <aside class="card card--brand-subtle blob-tr">
+          <h4>Público que mais te encontra</h4>
+          <div class="stack gap-4 mt-6" id="publico"></div>
+        </aside>
+      </div>
+
+      <!-- local em destaque -->
+      <div class="mt-12" id="area-destaque"></div>
+
+      <!-- todos os locais da conta -->
+      <div class="mt-12" id="meus-locais"></div>
+
+      <!-- assinatura / taxa -->
+      <div class="mt-12" id="area-plano"></div>
+    </div>
+  </section>
+</main>
+
+<div data-footer></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  /* Abrir o painel é entrar no papel de estabelecimento: o menu, o rodapé e
+     o menu do avatar passam a ser os do negócio até a pessoa trocar de volta. */
+  if (BL.iniciar({ nav: "painel", exigeLogin: true, modo: "estabelecimento" }) === false) return;
+
+  if (!BL.temLocais()) {
+    location.href = "parceiros.html#cadastro";
+    return;
+  }
+  /* exigeLogin resolve o caso sem conta, mas a troca de modo só acontece
+     quando existe local — sem isso o header voltaria para o modo viajante. */
+  BL.definirModo("estabelecimento");
+
+  function local() { return BL.localAtivo(); }
+  function planoAtual() {
+    return BL_PLANOS_PARCEIRO.filter(function (p) { return p.id === local().plano; })[0] || BL_PLANOS_PARCEIRO[0];
+  }
+  function indiceLocal() {
+    const id = local().id;
+    return BL.locais().map(function (l) { return l.id; }).indexOf(id);
+  }
+
+  /* ---------- topo ---------- */
+  function renderTopo() {
+    const l = local();
+    const p = planoAtual();
+    document.getElementById("topo-painel").innerHTML =
+      "<div>" +
+        '<span class="chip chip--outline">' + BL.icone("loja", "icon--sm") + " Painel do estabelecimento</span>" +
+        "<h1 class=\"mt-16\">" + l.nome + "</h1>" +
+        '<p class="hero__lead">' + l.categoria + " · " + l.cidade + "</p>" +
+      "</div>" +
+      '<div class="cluster gap-3">' +
+        seloHTML(l) +
+        '<span class="badge badge--premium">Plano ' + p.nome + "</span>" +
+      "</div>";
+  }
+
+  /* O selo vem da checagem, nunca do plano: é o que separa "paguei" de
+     "fui conferido". Um local no plano gratuito pode estar verificado e um
+     local pagante pode estar sem selo porque a checagem venceu. */
+  function checado(l) {
+    return !!(l.checagem && l.checagem.estado === "ok");
+  }
+
+  function seloHTML(l) {
+    if (checado(l)) {
+      return '<span class="badge">' + BL.icone("check-circulo", "icon--sm") +
+        "Verificado em " + l.checagem.em + "</span>";
+    }
+    const vencido = l.checagem && l.checagem.estado === "expirado";
+    return '<span class="badge" style="color: var(--text-secondary)">' + BL.icone("pino", "icon--sm") +
+      (vencido ? "Checagem vencida" : "Aguardando curadoria") + "</span>";
+  }
+
+  /* ---------- troca de local ---------- */
+  function renderTrocaLocal() {
+    const alvo = document.getElementById("troca-local");
+    const todos = BL.locais();
+    if (todos.length < 2) { alvo.innerHTML = ""; return; }
+
+    alvo.innerHTML = '<div class="segmented" role="tablist" aria-label="Escolher local">' +
+      todos.map(function (l) {
+        return '<button type="button" role="tab" data-local="' + l.id + '" aria-pressed="' +
+          (l.id === local().id) + '">' + l.nome + "</button>";
+      }).join("") + "</div>";
+
+    BL.$$("[data-local]", alvo).forEach(function (b) {
+      b.addEventListener("click", function () {
+        BL.definirLocalAtivo(b.getAttribute("data-local"));
+        renderTudo();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+  }
+
+  /* ---------- métricas ---------- */
+  /* Os números são de demonstração; cada local recebe uma escala diferente
+     para o painel não parecer que mostra o mesmo relatório para todos. */
+  function escala() { return 1 - Math.min(indiceLocal(), 2) * 0.32; }
+
+  function renderMetricas() {
+    const m = BL_PARCEIRO_METRICAS;
+    const f = escala();
+    const views = m.visualizacoes.map(function (v) { return Math.round(v * f); });
+    const total = views.reduce(function (a, b) { return a + b; }, 0);
+
+    document.getElementById("metricas").innerHTML = [
+      { v: total.toLocaleString("pt-BR"), l: "Visualizações nas buscas", i: "olho" },
+      { v: Math.round(m.cliques * f), l: "Cliques na ficha do local", i: "alta" },
+      { v: Math.round(m.salvos * f), l: "Viajantes que salvaram", i: "coracao" },
+      /* Contato é a métrica que decide a renovação: visualização não paga
+         conta de ninguém, e é também a base da cobrança por desempenho. */
+      { v: Math.round(m.contatos * f), l: "Contatos recebidos", i: "balao" }
+    ].map(function (c, idx) {
+      return '<div class="card ' + (idx === 0 ? "blob-tl" : idx === 3 ? "blob-br" : "") + ' stat">' +
+        '<span class="icon-tile" style="width:48px;height:48px;border-radius:16px">' + BL.icone(c.i) + "</span>" +
+        '<span class="stat__value mt-4">' + c.v + "</span>" +
+        '<span class="stat__label">' + c.l + "</span></div>";
+    }).join("");
+
+    /* Quanto custaria o mês no modelo por contato, para o parceiro poder
+       comparar com a mensalidade em vez de aceitar no escuro. */
+    const contatosMes = Math.round(m.contatos * f);
+    const custoPorContato = Math.min(
+      contatosMes * BL_PRECO_CONTATO.padrao,
+      BL_PRECO_CONTATO.tetoPadrao
+    );
+    const planoDestaque = BL_PLANOS_PARCEIRO.filter(function (x) { return x.id === 'destaque'; })[0];
+    const elComparacao = document.getElementById('comparacao-cobranca');
+    if (elComparacao) {
+      const maisBarato = custoPorContato < planoDestaque.preco
+        ? 'por contato sai mais barato'
+        : 'mensalidade sai mais barata';
+      elComparacao.innerHTML =
+        '<div class="cluster between gap-4"><div>' +
+        '<h4>Mensalidade ou por contato?</h4>' +
+        '<p class="body-sm text-secondary mt-2">Com ' + contatosMes +
+        ' contatos no mês, o modelo por desempenho sairia por ' + BL.dinheiro(custoPorContato) +
+        ' (' + BL.dinheiro(BL_PRECO_CONTATO.padrao) + ' por contato, teto de ' +
+        BL.dinheiro(BL_PRECO_CONTATO.tetoPadrao) + '). A mensalidade do Destaque é ' +
+        BL.dinheiro(planoDestaque.preco) + '.</p></div>' +
+        '<span class="tag tag--success">' + maisBarato + '</span></div>';
+    }
+
+    const maior = Math.max.apply(null, views);
+    document.getElementById("grafico").innerHTML = views.map(function (v, i) {
+      const alt = Math.round((v / maior) * 100);
+      return '<div class="bars__col ' + (i === views.length - 1 ? "is-on" : "") + '">' +
+        '<span class="caption strong">' + v + "</span>" +
+        '<div class="bars__bar" style="height:' + alt + '%"></div>' +
+        '<span class="bars__label">' + m.semanas[i] + "</span></div>";
+    }).join("");
+
+    document.getElementById("publico").innerHTML = [
+      { label: "Clima de romance", pct: 42 },
+      { label: "Viagem em família", pct: 28 },
+      { label: "Diversão com amigos", pct: 19 },
+      { label: "A trabalho", pct: 11 }
+    ].map(function (p) {
+      return "<div><div class=\"row between\"><span class=\"small\">" + p.label + '</span><strong class="body-sm">' + p.pct + "%</strong></div>" +
+        '<div class="meter"><span class="meter__fill" style="width:' + p.pct + '%"></span></div></div>';
+    }).join("");
+  }
+
+  /* ---------- local em destaque ---------- */
+  function renderDestaque() {
+    const l = local();
+    const temDestaque = l.plano === "destaque";
+    const exemplo = blBuscarDestino("blumenau");
+    const copia = Object.assign({}, exemplo, {
+      nome: l.nome, uf: l.cidade, pais: "",
+      /* o selo segue a checagem, não o plano */
+      verificado: checado(l),
+      tags: [l.categoria.toLowerCase(), "parceiro"], match: 93
+    });
+
+    document.getElementById("area-destaque").innerHTML =
+      '<div class="card">' +
+        '<div class="cluster between gap-4">' +
+          "<div><h3>Seu anúncio</h3>" +
+          '<p class="body-sm text-secondary mt-2">Seu card aparece num slot rotulado como anúncio, fora do ranking, para quem busca por ' + l.cidade + ".</p></div>" +
+          (temDestaque
+            ? '<label class="switch"><input type="checkbox" id="toggle-destaque" checked><span class="switch__track"></span><span class="body-sm">Destaque ativo</span></label>'
+            : '<a class="btn" href="#plano">Ativar destaque ' + BL.icone("seta", "icon--sm") + "</a>") +
+        "</div>" +
+
+        '<div class="grid grid--2 mt-8" style="align-items: start">' +
+          "<div>" +
+            '<p class="caption strong text-secondary mb-4">PRÉVIA DO SEU CARD NOS RESULTADOS</p>' +
+            /* a prévia nasce da cópia de um destino real, só para ter foto e
+               formato: o local ainda não tem avaliação nenhuma */
+            (temDestaque
+              ? BL.cardDestino(copia, { patrocinado: true, semMatch: true, semNota: true })
+              : BL.cardDestino(copia, { semMatch: true, semNota: true })) +
+          "</div>" +
+          '<div class="card card--flat">' +
+            "<h4>O que o anúncio entrega</h4>" +
+            '<ul class="plan__list mt-4">' +
+              ["Slot de anúncio rotulado nos resultados da sua cidade", "Campanha segmentada por clima de viagem", "Relatório semanal de audiência", "Cobrança por mensalidade ou por contato recebido"]
+                .map(function (t) {
+                  return "<li>" + (temDestaque ? BL.icone("check", "icon--sm") : BL.icone("cadeado", "icon--sm")) + "<span>" + t + "</span></li>";
+                }).join("") +
+            "</ul>" +
+            (temDestaque ? "" : '<p class="caption text-secondary mt-4">Disponível no plano Destaque (' +
+              BL.dinheiro(BL_PLANOS_PARCEIRO.filter(function (x) { return x.id === "destaque"; })[0].preco) +
+              "/mês) ou por contato recebido, a " + BL.dinheiro(BL_PRECO_CONTATO.padrao) + " cada.</p>") +
+          "</div>" +
+        "</div>" +
+      "</div>";
+
+    const toggle = document.getElementById("toggle-destaque");
+    if (toggle) {
+      toggle.addEventListener("change", function (e) {
+        BL.toast(e.target.checked ? "Destaque ativado nos resultados." : "Destaque pausado.", e.target.checked ? "sucesso" : undefined);
+      });
+    }
+  }
+
+  /* ---------- todos os locais da conta ---------- */
+  function renderMeusLocais() {
+    const todos = BL.locais();
+    const atual = local().id;
+
+    document.getElementById("meus-locais").innerHTML =
+      '<div class="secao-topo"><div>' +
+        "<h3>Meus locais</h3>" +
+        '<p class="body-sm text-secondary mt-2">Todos os estabelecimentos desta conta. Cada um tem o seu plano e o seu relatório.</p>' +
+      "</div>" +
+      '<a class="btn" href="parceiros.html#cadastro">' + BL.icone("mais", "icon--sm") + " Cadastrar outro local</a></div>" +
+
+      '<div class="stack gap-3">' + todos.map(function (l) {
+        const p = BL_PLANOS_PARCEIRO.filter(function (x) { return x.id === l.plano; })[0] || BL_PLANOS_PARCEIRO[0];
+        return '<div class="localrow" aria-current="' + (l.id === atual) + '">' +
+          '<span class="localrow__tile">' + BL.icone("loja") + "</span>" +
+          '<span class="localrow__id"><strong class="body-sm">' + l.nome + "</strong>" +
+            '<span class="caption text-secondary">' + l.categoria + " · " + l.cidade + " · plano " + p.nome + "</span></span>" +
+          seloHTML(l) +
+          '<span class="localrow__acoes">' +
+            (l.id === atual
+              ? '<span class="tag tag--success">' + BL.icone("check", "icon--sm") + "aberto no painel</span>"
+              : '<button class="btn btn--sm btn--outline" type="button" data-ver="' + l.id + '">Abrir no painel</button>') +
+            '<button class="btn btn--sm btn--ghost" type="button" data-remover="' + l.id + '">Remover</button>' +
+          "</span>" +
+        "</div>";
+      }).join("") + "</div>";
+
+    BL.$$("[data-ver]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        BL.definirLocalAtivo(b.getAttribute("data-ver"));
+        renderTudo();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+
+    BL.$$("[data-remover]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        const alvo = BL.buscarLocal(b.getAttribute("data-remover"));
+        if (!alvo) return;
+        BL.removerLocal(alvo.id);
+        BL.toast("Local removido: " + alvo.nome + ".");
+        /* sem local nenhum a conta volta a ser só de viajante */
+        if (!BL.temLocais()) setTimeout(function () { location.href = "index.html"; }, 700);
+        else renderTudo();
+      });
+    });
+  }
+
+  /* ---------- plano / taxa ---------- */
+  function renderPlano() {
+    const l = local();
+    const atual = planoAtual();
+
+    document.getElementById("area-plano").innerHTML =
+      '<div id="plano">' +
+      /* A checagem fica acima do plano de propósito: é a primeira coisa
+         que o dono do local quer saber e não custa nada. */
+      '<div class="card card--flat">' +
+        '<div class="cluster between gap-4">' +
+          "<div><h4>Checagem da curadoria</h4>" +
+          '<p class="body-sm text-secondary mt-2">' +
+            (checado(l)
+              ? "Verificado em " + l.checagem.em + ". O selo vale 12 meses e não custa nada — nem depende do seu plano."
+              : "A checagem é gratuita e independe do plano. Assim que aprovada, o selo aparece na sua ficha.") + "</p></div>" +
+          seloHTML(l) +
+        "</div>" +
+        (checado(l) ? "" :
+          '<button class="btn btn--outline btn--sm mt-6" type="button" id="pedir-checagem">' +
+            BL.icone("escudo", "icon--sm") + " Simular checagem aprovada</button>") +
+      "</div>" +
+      '<h3 class="mt-12">Plano do local</h3>' +
+      '<p class="body-sm text-secondary mt-2">O plano é por local — você pode ter um local no gratuito e outro em destaque. ' +
+        'O que o plano compra é ferramenta e alcance; o selo de verificação é gratuito.</p>' +
+      '<div class="grid grid--3 mt-8">' + BL_PLANOS_PARCEIRO.map(function (p) {
+        const ativo = p.id === l.plano;
+        return '<div class="card plan"' + (ativo ? ' style="outline: 3px solid var(--action-success)"' : "") + ">" +
+          '<div class="cluster between"><h4>' + p.nome + "</h4>" +
+            (ativo ? '<span class="tag tag--success">' + BL.icone("check", "icon--sm") + "plano atual</span>" : "") + "</div>" +
+          '<div class="plan__price" style="font-size: 36px">' + (p.preco === 0 ? "R$ 0" : BL.dinheiro(p.preco)) + '<span class="body-sm">/mês</span></div>' +
+          (p.precoAnual ? '<p class="caption text-secondary">ou ' + BL.dinheiro(p.precoAnual) + "/ano</p>" : "") +
+          '<p class="body-sm text-secondary">' + p.descricao + "</p>" +
+          (ativo
+            ? '<button class="btn btn--outline btn--block" type="button" disabled>Plano ativo</button>'
+            : '<button class="btn btn--block" type="button" data-trocar="' + p.id + '">Mudar para ' + p.nome + "</button>") +
+          "</div>";
+      }).join("") + "</div>" +
+
+      '<div class="card card--flat mt-8">' +
+        '<div class="cluster between gap-4">' +
+          "<div><h4>Próxima cobrança</h4>" +
+          '<p class="body-sm text-secondary mt-2">' + (atual.preco === 0
+            ? "O plano deste local é gratuito — nada será cobrado. A checagem também não é cobrada."
+            : BL.dinheiro(atual.preco) + " em 30 dias, no cartão terminado em 4242.") + "</p></div>" +
+          '<button class="btn btn--ghost btn--sm" type="button" id="alterar-pagamento">' + BL.icone("cartao", "icon--sm") + " Alterar forma de pagamento</button>" +
+        "</div>" +
+      "</div></div>";
+
+    BL.$$("[data-trocar]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        BL.atualizarLocal(l.id, { plano: b.dataset.trocar });
+        BL.toast("Plano de " + l.nome + " alterado para " + planoAtual().nome + ".", "sucesso");
+        renderTudo();
+        window.scrollTo({ top: document.getElementById("area-destaque").offsetTop - 100, behavior: "smooth" });
+      });
+    });
+
+    /* Demonstra na prática que o selo não vem do plano: aprova a checagem
+       sem tocar na cobrança. */
+    const btnChecagem = document.getElementById("pedir-checagem");
+    if (btnChecagem) {
+      btnChecagem.addEventListener("click", function () {
+        const agora = new Date();
+        const mes = String(agora.getMonth() + 1).padStart(2, "0");
+        BL.atualizarLocal(l.id, {
+          status: "ativo",
+          checagem: { em: mes + "/" + agora.getFullYear(), estado: "ok" }
+        });
+        BL.toast("Checagem aprovada. O selo não custou nada.", "sucesso");
+        renderTudo();
+      });
+    }
+
+    const btnPagamento = document.getElementById("alterar-pagamento");
+    if (btnPagamento) {
+      btnPagamento.addEventListener("click", function () {
+        BL.toast("No protótipo não há cobrança real nem dados de pagamento.");
+      });
+    }
+  }
+
+  function renderTudo() {
+    renderTopo();
+    renderTrocaLocal();
+    renderMetricas();
+    renderDestaque();
+    renderMeusLocais();
+    renderPlano();
+  }
+  renderTudo();
+})();
+</script>
+</body>
+</html>

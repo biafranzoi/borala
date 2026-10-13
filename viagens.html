@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Viagens coletivas — Boralá!</title>
+<meta name="description" content="Todas as suas viagens em grupo em um lugar: votação do destino, convites pendentes e viagens já encerradas.">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/design-system.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<div data-header></div>
+
+<main>
+  <section class="hero hero--sm">
+    <img class="hero__bg" src="assets/img/grupo-trilha.jpg" alt="">
+    <div class="container hero__inner">
+      <span class="chip chip--outline"><span data-icone="pessoas" data-icone-classe="icon--sm"></span> Funcionalidade premium</span>
+      <h1 class="mt-4">Viagens coletivas</h1>
+      <p class="hero__lead">Decidir o destino em grupo costuma travar no grupo de mensagens. Aqui cada viagem tem votação, custo dividido e checklist no mesmo lugar.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div id="aviso-destino"></div>
+      <div id="area-viagens"></div>
+    </div>
+  </section>
+
+  <section class="section section--sm">
+    <div class="container">
+      <h2>Como funciona uma viagem coletiva</h2>
+      <div class="grid grid--3 mt-8">
+        <div class="card blob-tl step">
+          <span class="icon-tile"><span data-icone="marcador" data-icone-classe="icon--lg"></span></span>
+          <div><h4>1. Cada pessoa vota</h4>
+          <p class="body-sm text-secondary mt-2">Você sugere destinos a partir dos resultados da busca e a turma escolhe. Um voto por pessoa, trocável até a votação fechar.</p></div>
+        </div>
+        <div class="card step">
+          <span class="icon-tile"><span data-icone="cartao" data-icone-classe="icon--lg"></span></span>
+          <div><h4>2. O custo aparece dividido</h4>
+          <p class="body-sm text-secondary mt-2">O rateio usa a estimativa do destino líder e o número de pessoas confirmadas — sem ninguém fazendo conta no papel.</p></div>
+        </div>
+        <div class="card blob-br step">
+          <span class="icon-tile"><span data-icone="check" data-icone-classe="icon--lg"></span></span>
+          <div><h4>3. O checklist é do grupo</h4>
+          <p class="body-sm text-secondary mt-2">Passagem, hospedagem e passeios ficam numa lista só, visível para todo mundo que foi convidado.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div data-footer></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  if (!BL.iniciar({ nav: "viagens", exigeLogin: true, modo: "viajante" })) return;
+
+  const p = BL.params();
+  const area = document.getElementById("area-viagens");
+
+  /* Destino que veio da página de detalhe: o índice entra em modo
+     "escolha a viagem" e o destino segue para a viagem escolhida. */
+  const destinoSugerido = p.destino ? blBuscarDestino(p.destino) : null;
+
+  let filtro = "todas";
+  let criando = false;
+
+  /* As viagens criadas no protótipo ficam no localStorage, junto do
+     resto do estado da conta, e aparecem misturadas às de exemplo. */
+  function todasAsViagens() {
+    return BL_VIAGENS.concat(BL.viagens());
+  }
+
+  function daPessoa(v) { return !v.convite; }
+  function plural(n, um, varios) { return n + " " + (n === 1 ? um : varios); }
+
+  function listaFiltrada() {
+    const todas = todasAsViagens();
+    if (filtro === "votacao") return todas.filter(function (v) { return daPessoa(v) && v.status === "votacao"; });
+    if (filtro === "definidas") return todas.filter(function (v) { return daPessoa(v) && v.status === "definida"; });
+    if (filtro === "encerradas") return todas.filter(function (v) { return daPessoa(v) && v.status === "encerrada"; });
+    if (filtro === "convites") return todas.filter(function (v) { return v.convite; });
+    return todas.filter(daPessoa);
+  }
+
+  function contar(chave) {
+    const todas = todasAsViagens();
+    if (chave === "convites") return todas.filter(function (v) { return v.convite; }).length;
+    if (chave === "todas") return todas.filter(daPessoa).length;
+    const status = chave === "definidas" ? "definida" : chave === "encerradas" ? "encerrada" : "votacao";
+    return todas.filter(function (v) { return daPessoa(v) && v.status === status; }).length;
+  }
+
+  /* ---------- aviso de destino sugerido ---------- */
+  if (destinoSugerido) {
+    document.getElementById("aviso-destino").innerHTML =
+      '<div class="alert mb-8">' + BL.icone("marcador") +
+        '<div class="alert__body"><strong>Escolha a viagem que vai receber ' + destinoSugerido.nome + "</strong>" +
+        '<p class="body-sm">O destino entra como candidato na votação do grupo. Você também pode criar uma viagem nova.</p></div>' +
+      "</div>";
+  }
+
+  /* ---------- cartão de viagem ---------- */
+  function statusDaViagem(v) {
+    if (v.status === "encerrada") return { texto: "Encerrada", classe: "tag--neutral" };
+    if (v.status === "definida") return { texto: "Destino definido", classe: "tag--success" };
+    return { texto: "Votação aberta", classe: "" };
+  }
+
+  function cardViagem(v) {
+    const lider = blLiderDaViagem(v);
+    const votos = blVotosDaViagem(v);
+    const pessoas = v.membros.length;
+    const pct = pessoas ? Math.round((Math.min(votos, pessoas) / pessoas) * 100) : 0;
+    const st = statusDaViagem(v);
+    const capa = lider ? lider.img : "assets/img/planejamento.jpg";
+    const destino = destinoSugerido ? "&destino=" + destinoSugerido.id : "";
+
+    const miolo = v.destinoEscolhido
+      ? '<p class="body-sm"><strong>' + lider.nome + "</strong>, " + lider.uf + " · " + BL.dinheiro(lider.preco) + " por pessoa</p>" +
+        '<p class="caption text-secondary">' + (v.status === "encerrada" ? "Viagem concluída" : "Destino fechado com o grupo") + "</p>"
+      : v.candidatos.length
+        ? '<div class="cluster between"><span class="body-sm text-secondary">' + votos + " de " + pessoas + " já votaram</span>" +
+            '<strong class="body-sm">' + pct + "%</strong></div>" +
+          '<div class="meter"><span class="meter__fill" style="width:' + pct + '%"></span></div>' +
+          '<p class="caption text-secondary">' + (lider ? lider.nome + " lidera a votação" : "") + "</p>"
+        : '<p class="body-sm text-secondary">Nenhum destino sugerido ainda. Abra a viagem e traga as primeiras opções.</p>';
+
+    const acao = v.convite
+      ? '<div class="cluster gap-2">' +
+          '<button class="btn btn--sm" type="button" data-aceitar="' + v.id + '">Entrar</button>' +
+          '<button class="btn btn--ghost btn--sm" type="button" data-recusar="' + v.id + '">Recusar</button>' +
+        "</div>"
+      : '<a class="btn btn--sm" href="viagem.html?id=' + v.id + destino + '">' +
+          (destinoSugerido ? "Sugerir aqui " : "Abrir viagem ") + BL.icone("seta", "icon--sm") + "</a>";
+
+    return '<article class="tripcard ' + (v.convite ? "tripcard--convite" : "") + '">' +
+      '<div class="tripcard__media">' +
+        '<img src="' + capa + '" alt="" loading="lazy">' +
+        '<span class="tag tag--overlay tripcard__status">' + st.texto + "</span>" +
+        '<div class="avatar-stack tripcard__people">' + v.membros.slice(0, 4).map(function (m) {
+          return '<img class="avatar avatar--sm" src="' + m.avatar + '" alt="' + m.nome + '" title="' + m.nome + '">';
+        }).join("") + "</div>" +
+      "</div>" +
+      '<div class="tripcard__body">' +
+        "<h3>" + v.nome + "</h3>" +
+        '<p class="body-sm text-secondary">' + BL.icone("calendario", "icon--sm") + " " + v.periodo + "</p>" +
+        '<div class="stack gap-2">' + miolo + "</div>" +
+        '<div class="tripcard__foot">' +
+          '<span class="caption text-secondary">' + plural(pessoas, "pessoa", "pessoas") + " · " +
+            (v.convite ? "convite de " + v.organizador : v.organizador === "Você" ? "organizada por você" : "de " + v.organizador) +
+          "</span>" + acao +
+        "</div>" +
+      "</div></article>";
+  }
+
+  /* ---------- formulário de nova viagem ---------- */
+  function formNovaViagem() {
+    if (!criando) return "";
+    return '<div class="card blob-tl mb-8" id="form-wrap">' +
+      '<div class="cluster between gap-4"><h3>Nova viagem coletiva</h3>' +
+        '<button class="btn-icon btn-icon--sm" type="button" id="fechar-form" aria-label="Fechar formulário">' + BL.icone("fechar", "icon--sm") + "</button></div>" +
+      '<form class="stack gap-6 mt-6" id="form-viagem">' +
+        '<div class="grid grid--2" style="gap: 16px">' +
+          '<div class="field"><label class="field__label" for="nome-viagem">Nome da viagem</label>' +
+            '<input class="input" id="nome-viagem" required placeholder="Ex.: Feriado de novembro"></div>' +
+          '<div class="field"><label class="field__label" for="periodo-viagem">Quando deve ser</label>' +
+            '<input class="input" id="periodo-viagem" required placeholder="Ex.: 15 a 20 de novembro">' +
+            '<span class="field__hint">Pode ser aproximado — dá para ajustar depois da votação.</span></div>' +
+        "</div>" +
+        '<div class="field"><label class="field__label" for="convites-viagem">Convidar por e-mail</label>' +
+          '<input class="input" id="convites-viagem" placeholder="nome@email.com, outro@email.com">' +
+          '<span class="field__hint">No protótipo o convite não é enviado de verdade.</span></div>' +
+        '<button class="btn btn--lg" type="submit">Criar viagem</button>' +
+      "</form></div>";
+  }
+
+  /* ---------- render ---------- */
+  function render() {
+    const lista = listaFiltrada();
+    const abas = [
+      { v: "todas", label: "Todas" },
+      { v: "votacao", label: "Votação aberta" },
+      { v: "definidas", label: "Destino definido" },
+      { v: "convites", label: "Convites" },
+      { v: "encerradas", label: "Encerradas" }
+    ];
+
+    area.innerHTML =
+      '<div data-premium data-premium-origem="viagens" ' +
+           'data-premium-titulo="Viagens coletivas são para assinantes" ' +
+           'data-premium-texto="Organize a viagem com até 10 pessoas: votação de destino, rateio de custos e checklist compartilhado.">' +
+
+        '<div class="cluster between gap-4 mb-8">' +
+          "<div><h2>Suas viagens</h2>" +
+            '<p class="body-sm text-secondary mt-2">Viagens que você organiza, viagens em que foi convidado e as que já aconteceram.</p></div>' +
+          '<button class="btn" type="button" id="abrir-form">' + BL.icone("mais", "icon--sm") + " Nova viagem</button>" +
+        "</div>" +
+
+        '<div class="segmented tripcard-filtros mb-8" id="filtro-viagens">' + abas.map(function (a) {
+          const n = contar(a.v);
+          return '<button type="button" aria-pressed="' + (a.v === filtro) + '" data-filtro="' + a.v + '">' +
+            a.label + (n ? " (" + n + ")" : "") + "</button>";
+        }).join("") + "</div>" +
+
+        formNovaViagem() +
+
+        (lista.length
+          ? '<div class="grid grid--3">' + lista.map(cardViagem).join("") + "</div>"
+          : '<div class="empty">' +
+              '<span class="icon-tile">' + BL.icone("pessoas", "icon--lg") + "</span>" +
+              "<h3>" + (filtro === "convites" ? "Nenhum convite pendente" : "Nenhuma viagem por aqui") + "</h3>" +
+              '<p class="text-secondary measure">' + (filtro === "convites"
+                ? "Quando alguém te convidar para uma viagem, ela aparece nesta aba."
+                : "Crie uma viagem, convide a turma e traga os destinos que vocês estão namorando.") + "</p>" +
+              (filtro === "convites" ? "" : '<button class="btn" type="button" id="criar-vazio">' + BL.icone("mais", "icon--sm") + " Criar viagem</button>") +
+            "</div>") +
+      "</div>";
+
+    ligarEventos();
+    BL.aplicarBloqueios();
+  }
+
+  function ligarEventos() {
+    BL.$$("#filtro-viagens button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        filtro = b.dataset.filtro;
+        render();
+      });
+    });
+
+    ["abrir-form", "criar-vazio"].forEach(function (id) {
+      const btn = document.getElementById(id);
+      if (btn) btn.addEventListener("click", function () { criando = true; render(); });
+    });
+
+    const fechar = document.getElementById("fechar-form");
+    if (fechar) fechar.addEventListener("click", function () { criando = false; render(); });
+
+    const form = document.getElementById("form-viagem");
+    if (form) {
+      form.addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        const nova = BL.criarViagem({
+          nome: document.getElementById("nome-viagem").value,
+          periodo: document.getElementById("periodo-viagem").value
+        });
+        if (destinoSugerido) nova.candidatos.push({ destinoId: destinoSugerido.id, votos: 0 });
+        BL.toast("Viagem criada! Abrindo para convidar a turma.", "sucesso");
+        setTimeout(function () { location.href = "viagem.html?id=" + nova.id; }, 700);
+      });
+    }
+
+    BL.$$("[data-aceitar]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        const v = blBuscarViagem(b.dataset.aceitar, BL.viagens());
+        /* O convite aceito vale para esta visita: o protótipo não guarda
+           viagens de outras pessoas no estado da conta. */
+        v.convite = false;
+        v.membros.push({ nome: "Você", avatar: "assets/img/p1.jpg" });
+        BL.toast("Você entrou em " + v.nome + ".", "sucesso");
+        filtro = "todas";
+        render();
+      });
+    });
+
+    BL.$$("[data-recusar]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        BL.toast("Convite recusado. Quem organiza é avisado.");
+      });
+    });
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

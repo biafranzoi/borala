@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anunciar meu local — Boralá!</title>
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/design-system.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<div data-header></div>
+
+<main>
+  <!-- Para visitante, esta é uma página de divulgação B2B. Para quem já tem
+       conta, é só o formulário de anunciar um local — a pessoa já conhece o
+       produto, não precisa ser convencida de novo. -->
+  <section class="hero hero--sm">
+    <img class="hero__bg" src="assets/img/blumenau.jpg" alt="">
+    <div class="container hero__inner">
+      <div data-se="visitante">
+        <span class="chip chip--outline"><span data-icone="loja" data-icone-classe="icon--sm"></span> Para estabelecimentos</span>
+        <h1 class="mt-4">Apareça para quem já decidiu viajar</h1>
+        <p class="hero__lead">Hotéis, restaurantes, bares e passeios no Boralá! são mostrados para viajantes que acabaram de escolher o destino — e ainda não escolheram onde ficar e comer.</p>
+        <div class="cluster gap-4 mt-8">
+          <a class="btn btn--lg" href="#cadastro">Cadastrar meu estabelecimento <span data-icone="seta" data-icone-classe="icon--sm"></span></a>
+          <a class="btn btn--outline btn--lg" href="#planos">Ver planos</a>
+        </div>
+      </div>
+
+      <div data-se="logado">
+        <span class="chip chip--outline"><span data-icone="loja" data-icone-classe="icon--sm"></span> Seu negócio na sua conta</span>
+        <h1 class="mt-4" id="titulo-logado">Anunciar um local</h1>
+        <p class="hero__lead" id="sub-logado"></p>
+        <div class="cluster gap-4 mt-8" id="cta-logado"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- benefícios: argumento de venda, só para quem ainda não entrou -->
+  <section class="section" data-se="visitante">
+    <div class="container">
+      <div class="grid grid--3">
+        <div class="card blob-tl step">
+          <span class="icon-tile"><span data-icone="alta" data-icone-classe="icon--lg"></span></span>
+          <div><h4>Público de alta intenção</h4>
+          <p class="body-sm text-secondary mt-2">Quem chega até seu card já definiu destino, data aproximada e orçamento. Não é tráfego frio.</p></div>
+        </div>
+        <div class="card step">
+          <span class="icon-tile"><span data-icone="escudo" data-icone-classe="icon--lg"></span></span>
+          <div><h4>Selo de verificado, de graça</h4>
+          <p class="body-sm text-secondary mt-2">A checagem não custa nada e não depende de plano. O selo é o que coloca você no filtro de verificados — e ele não está à venda.</p></div>
+        </div>
+        <div class="card blob-br step">
+          <span class="icon-tile"><span data-icone="olho" data-icone-classe="icon--lg"></span></span>
+          <div><h4>Relatórios de audiência</h4>
+          <p class="body-sm text-secondary mt-2">Veja quantas pessoas viram, salvaram e clicaram no seu local, por semana e por clima de viagem.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- quem já administra locais vê primeiro o que já é dele -->
+  <section class="section section--sm" data-se="parceiro">
+    <div class="container">
+      <div id="area-meus-locais"></div>
+    </div>
+  </section>
+
+  <!-- cadastro -->
+  <section class="section" id="cadastro">
+    <div class="container">
+      <div class="grid grid--aside">
+        <div class="card blob-tl">
+          <h2 id="titulo-form">Cadastrar estabelecimento</h2>
+          <p class="text-secondary mt-2">Leva uns 3 minutos. Depois do envio, a curadoria responde em até 5 dias úteis.</p>
+
+          <form class="stack gap-6 mt-8" id="form-parceiro">
+            <div class="stepper mb-2">
+              <span class="stepper__item is-active"><span class="stepper__num">1</span>Dados do local</span>
+              <span class="stepper__line"></span>
+              <span class="stepper__item"><span class="stepper__num">2</span>Curadoria</span>
+              <span class="stepper__line"></span>
+              <span class="stepper__item"><span class="stepper__num">3</span>No ar</span>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="nome">Nome do estabelecimento</label>
+              <input class="input" id="nome" required placeholder="Ex.: Cervejaria Bierland">
+            </div>
+
+            <div class="grid grid--2" style="gap: 16px">
+              <div class="field">
+                <label class="field__label" for="categoria">Categoria</label>
+                <select class="select" id="categoria">
+                  <option>Hospedagem</option>
+                  <option>Restaurante</option>
+                  <option>Bar</option>
+                  <option>Passeio ou experiência</option>
+                  <option>Transporte local</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="cidade">Cidade e estado</label>
+                <input class="input" id="cidade" required placeholder="Blumenau, SC">
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="site">Site ou rede social</label>
+              <input class="input" id="site" placeholder="instagram.com/seulocal">
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="descricao">O que seu local oferece</label>
+              <textarea class="textarea" id="descricao" placeholder="Conte em poucas linhas o que faz seu local valer a visita."></textarea>
+              <span class="field__hint">Aparece na ficha do local dentro do destino.</span>
+            </div>
+
+            <div class="field">
+              <label class="field__label">Fotos do local</label>
+              <div class="card card--flat text-center" style="border-style: dashed; padding: 32px">
+                <span data-icone="camera" data-icone-classe="icon--lg" style="color: var(--c-brand-600)"></span>
+                <p class="body-sm text-secondary mt-2">Arraste as fotos aqui ou clique para selecionar</p>
+                <p class="caption text-secondary">No protótipo o upload é apenas demonstrativo.</p>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="field__label">Plano escolhido</label>
+              <div class="cluster gap-2" id="escolha-plano"></div>
+            </div>
+
+            <label class="check">
+              <input type="checkbox" id="aceite">
+              <span class="check__box"><span data-icone="check"></span></span>
+              <span class="caption">Declaro que represento este estabelecimento e aceito receber a visita da curadoria.</span>
+            </label>
+
+            <button class="btn btn--lg" type="submit" id="btn-enviar">Enviar cadastro</button>
+          </form>
+        </div>
+
+        <aside class="stack gap-4 sticky-col">
+          <!-- a mesma conta serve para os dois papéis: é o ponto que faz
+               a pessoa entender por que não precisa de outro cadastro -->
+          <div class="card card--brand-subtle blob-tr" data-se="logado">
+            <h4>Vai ficar na sua conta</h4>
+            <p class="body-sm mt-3" id="aviso-conta"></p>
+            <p class="body-sm mt-3">Depois do envio, um botão no topo do site troca entre <b>viajar</b> e <b>administrar o local</b> quando você quiser.</p>
+          </div>
+
+          <div class="card card--brand-subtle blob-tr">
+            <h4>Como funciona a curadoria</h4>
+            <ul class="plan__list mt-4">
+              <li><span data-icone="check" data-icone-classe="icon--sm"></span><span><strong>A checagem é gratuita</strong> e vale igual para quem paga e para quem não paga.</span></li>
+              <li><span data-icone="check" data-icone-classe="icon--sm"></span><span>Conferimos documento, endereço, funcionamento e reputação pública.</span></li>
+              <li><span data-icone="check" data-icone-classe="icon--sm"></span><span>Visita presencial por amostragem e com parceiros locais de confiança.</span></li>
+              <li><span data-icone="check" data-icone-classe="icon--sm"></span><span>O selo mostra a data da checagem e expira em 12 meses: local pagante com checagem vencida perde o selo.</span></li>
+              <li><span data-icone="check" data-icone-classe="icon--sm"></span><span>Avaliação ruim recorrente suspende o anúncio — nunca o selo.</span></li>
+            </ul>
+            <hr class="divider mt-6">
+            <p class="caption text-secondary mt-4">Dúvidas? Fale com a gente em parceiros@borala.com.br</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- planos / taxa de assinatura -->
+  <section class="section section--subtle" style="border-top-right-radius: var(--radius-blob-lg)" id="planos">
+    <div class="container">
+      <div class="text-center">
+        <h2>Planos</h2>
+        <p class="text-secondary measure mx-auto mt-4">Aparecer na ficha do destino é gratuito, e o selo de verificação também. Os planos pagos dão ferramentas de gestão e alcance — com a opção de pagar por contato recebido, em vez de mensalidade.</p>
+      </div>
+      <div class="grid grid--3 mt-12" id="planos-parceiro"></div>
+      <div class="card card--flat mt-12" id="bloco-politica">
+        <h4>Regras do anúncio</h4>
+        <p class="body-sm text-secondary mt-2" id="politica-anuncio"></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div data-footer></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  /* Esta página é o caminho de entrada do papel de estabelecimento, então
+     ela própria não troca o modo: quem chega aqui ainda está viajando. */
+  BL.iniciar({ nav: "parceiros" });
+
+  const logado = BL.logado();
+  const meus = BL.locais();
+  let planoEscolhido = meus.length ? "verificado" : "verificado";
+
+  /* ---- topo para quem já tem conta ---- */
+  const titulo = document.getElementById("titulo-logado");
+  if (titulo) {
+    const sub = document.getElementById("sub-logado");
+    const cta = document.getElementById("cta-logado");
+    if (meus.length) {
+      titulo.textContent = "Cadastrar outro local";
+      sub.textContent = "Você já administra " + meus.length +
+        (meus.length === 1 ? " local" : " locais") +
+        " nesta conta. Cada local tem o seu próprio plano e relatório.";
+      cta.innerHTML = '<a class="btn btn--inverse btn--lg" href="#cadastro">Cadastrar outro local ' +
+          BL.icone("seta", "icon--sm") + "</a>" +
+        '<button class="btn btn--outline btn--lg" type="button" data-ir-painel>Ir para o painel</button>';
+    } else {
+      titulo.textContent = "Anuncie seu local no Boralá!";
+      sub.textContent = "Você aparece para viajantes que acabaram de escolher o destino. " +
+        "O local fica dentro desta mesma conta — não existe cadastro separado.";
+      cta.innerHTML = '<a class="btn btn--inverse btn--lg" href="#cadastro">Começar o cadastro ' +
+        BL.icone("seta", "icon--sm") + "</a>";
+    }
+  }
+
+  const aviso = document.getElementById("aviso-conta");
+  if (aviso) {
+    const u = BL.estado().usuario;
+    aviso.innerHTML = "O local entra na conta <b>" + u.email +
+      "</b>, a mesma que você usa para viajar. Seus destinos salvos e suas viagens continuam separados do negócio.";
+  }
+
+  BL.$$("[data-ir-painel]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      BL.definirModo("estabelecimento");
+      location.href = "parceiros-painel.html";
+    });
+  });
+
+  /* ---- lista de locais já cadastrados ---- */
+  const areaMeus = document.getElementById("area-meus-locais");
+  if (areaMeus) {
+    areaMeus.innerHTML =
+      "<h2>Seus locais</h2>" +
+      '<div class="stack gap-3 mt-6">' + meus.map(function (l) {
+        const plano = BL_PLANOS_PARCEIRO.filter(function (p) { return p.id === l.plano; })[0] || BL_PLANOS_PARCEIRO[0];
+        return '<div class="localrow">' +
+          '<span class="localrow__tile">' + BL.icone("loja") + "</span>" +
+          '<span class="localrow__id"><strong class="body-sm">' + l.nome + "</strong>" +
+            '<span class="caption text-secondary">' + l.categoria + " · " + l.cidade + " · plano " + plano.nome + "</span></span>" +
+          '<span class="localrow__acoes">' +
+            '<button class="btn btn--sm btn--outline" type="button" data-abrir="' + l.id + '">Administrar</button>' +
+          "</span>" +
+        "</div>";
+      }).join("") + "</div>";
+
+    BL.$$("[data-abrir]", areaMeus).forEach(function (b) {
+      b.addEventListener("click", function () {
+        BL.definirLocalAtivo(b.getAttribute("data-abrir"));
+        BL.definirModo("estabelecimento");
+        location.href = "parceiros-painel.html";
+      });
+    });
+  }
+
+  /* ---- cards de plano ---- */
+  const politica = document.getElementById("politica-anuncio");
+  if (politica) politica.textContent = BL_POLITICA_ANUNCIO;
+
+  document.getElementById("planos-parceiro").innerHTML = BL_PLANOS_PARCEIRO.map(function (p) {
+    return '<div class="card plan ' + (p.recomendado ? "blob-br" : "") + '"' +
+      (p.recomendado ? ' style="outline: 3px solid var(--c-brand-600)"' : "") + ">" +
+      '<div class="cluster between"><h3>' + p.nome + "</h3>" +
+        (p.recomendado ? '<span class="badge badge--premium">recomendado</span>' : "") + "</div>" +
+      '<p class="body-sm text-secondary">' + p.descricao + "</p>" +
+      '<div class="plan__price">' + (p.preco === 0 ? "R$ 0" : BL.dinheiro(p.preco)) + "<span>/mês</span></div>" +
+      /* Anual é o que segura o parceiro além da primeira temporada. */
+      (p.precoAnual
+        ? '<p class="caption text-secondary">ou ' + BL.dinheiro(p.precoAnual) + '/ano <span class="tag tag--success">2 meses grátis</span></p>'
+        : "") +
+      '<ul class="plan__list">' +
+        p.itens.map(function (i) { return "<li>" + BL.icone("check", "icon--sm") + "<span>" + i + "</span></li>"; }).join("") +
+        p.fora.map(function (i) { return '<li class="is-off">' + BL.icone("fechar", "icon--sm") + "<span>" + i + "</span></li>"; }).join("") +
+      "</ul>" +
+      /* Onde o Boralá! ainda não tem audiência, mensalidade de
+         Destaque é pedir fé. Por contato, o risco fica com a gente. */
+      (p.porContato
+        ? '<div class="card card--brand-subtle">' +
+            '<strong class="body-sm">Ou pague por contato</strong>' +
+            '<p class="caption text-secondary mt-2">' + BL.dinheiro(BL_PRECO_CONTATO.padrao) +
+              " por contato recebido (telefone, WhatsApp ou site), com teto de " +
+              BL.dinheiro(BL_PRECO_CONTATO.tetoPadrao) + " por mês. Sem contato, sem cobrança.</p>" +
+          "</div>"
+        : "") +
+      '<a class="btn ' + (p.recomendado ? "" : "btn--outline") + ' btn--block" href="#cadastro" data-plano="' + p.id + '">Escolher ' + p.nome + "</a>" +
+      "</div>";
+  }).join("");
+
+  /* ---- seleção de plano no formulário ---- */
+  function renderEscolha() {
+    document.getElementById("escolha-plano").innerHTML = BL_PLANOS_PARCEIRO.map(function (p) {
+      return '<button class="chip ' + (p.id === planoEscolhido ? "is-selected" : "") + '" type="button" data-escolha="' + p.id + '">' +
+        p.nome + (p.preco ? " · " + BL.dinheiro(p.preco) + "/mês" : " · grátis") + "</button>";
+    }).join("");
+    BL.$$("[data-escolha]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        planoEscolhido = b.dataset.escolha;
+        renderEscolha();
+      });
+    });
+  }
+  renderEscolha();
+
+  BL.$$("[data-plano]").forEach(function (a) {
+    a.addEventListener("click", function () {
+      planoEscolhido = a.dataset.plano;
+      renderEscolha();
+    });
+  });
+
+  /* ---- formulário ---- */
+  const tituloForm = document.getElementById("titulo-form");
+  if (meus.length) tituloForm.textContent = "Cadastrar outro local";
+
+  /* Anunciar exige conta: é na conta que o local vai morar. Sem login o
+     botão leva ao cadastro e volta para cá depois. */
+  const btnEnviar = document.getElementById("btn-enviar");
+  if (!logado) {
+    btnEnviar.textContent = "Criar conta para anunciar";
+    btnEnviar.insertAdjacentHTML("afterend",
+      '<p class="caption text-secondary">O local fica dentro da sua conta de viajante — a mesma que você usa para buscar destinos.</p>');
+  }
+
+  document.getElementById("form-parceiro").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    if (!BL.logado()) {
+      BL.toast("Entre na sua conta para anunciar um local.");
+      setTimeout(function () {
+        location.href = "login.html?modo=cadastro&next=" + encodeURIComponent("parceiros.html#cadastro");
+      }, 700);
+      return;
+    }
+
+    if (!document.getElementById("aceite").checked) {
+      BL.toast("Marque a declaração para enviar o cadastro.");
+      return;
+    }
+
+    BL.adicionarLocal({
+      nome: document.getElementById("nome").value,
+      categoria: document.getElementById("categoria").value,
+      cidade: document.getElementById("cidade").value,
+      site: document.getElementById("site").value,
+      descricao: document.getElementById("descricao").value,
+      plano: planoEscolhido
+    });
+    BL.definirModo("estabelecimento");
+    BL.toast("Local cadastrado! Abrindo o painel do estabelecimento.", "sucesso");
+    setTimeout(function () { location.href = "parceiros-painel.html"; }, 900);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estabelecimento — Boralá!</title>
+<meta name="description" content="Ficha de um estabelecimento parceiro: fotos, selo de curadoria, horários, contato e avaliações de assinantes.">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/design-system.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<div data-header></div>
+
+<main id="conteudo"></main>
+
+<div data-footer></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+(function () {
+  BL.iniciar({ nav: "destinos" });
+
+  const p = BL.params();
+  const e = blBuscarEstabelecimento(p.id || "bierland");
+  const conteudo = document.getElementById("conteudo");
+
+  if (!e) {
+    conteudo.innerHTML =
+      '<div class="container section"><div class="empty">' +
+        '<span class="icon-tile">' + BL.icone("loja", "icon--lg") + "</span>" +
+        "<h2>Estabelecimento não encontrado</h2>" +
+        '<p class="text-secondary measure">O link pode estar errado ou o local saiu do ar. Veja os destinos para encontrar outros locais da curadoria.</p>' +
+        '<a class="btn" href="resultados.html">Boralá!</a>' +
+      "</div></div>";
+    return;
+  }
+
+  const destino = blBuscarDestino(e.destinoId);
+  const emDestaque = e.plano === "destaque";
+
+  /* Esta ficha é pública, mas quem a vê pode ser o próprio dono: no
+     Boralá! o local mora dentro da conta de viajante da pessoa.
+     Comparamos pelo nome porque no protótipo não existe id em comum
+     entre o catálogo e os locais cadastrados na conta. */
+  function simplificar(txt) {
+    return String(txt || "").trim().toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+  const meuLocal = BL.locais().filter(function (l) {
+    return simplificar(l.nome) === simplificar(e.nome);
+  })[0] || null;
+  document.title = e.nome + " — Boralá!";
+
+  /* ---------- selos ---------- */
+  /* Três estados, não dois: quem nunca foi checado e quem perdeu a validade
+     precisam ler diferente — senão o selo do topo contradiz a explicação da
+     coluna lateral. */
+  const selo = e.verificado
+    ? '<span class="badge">' + BL.icone("check-circulo", "icon--sm") + "Local verificado</span>"
+    : e.checagem && e.checagem.estado === "expirado"
+      ? '<span class="badge badge--neutral">' + BL.icone("relogio", "icon--sm") + "Checagem vencida</span>"
+      : '<span class="badge badge--neutral">' + BL.icone("pino", "icon--sm") + "Sem curadoria ainda</span>";
+  /* "Anúncio", e não "destaque": o mesmo nome que o card nos resultados e a
+     lista de locais do destino usam. Posição comprada se chama pelo nome. */
+  const seloDestaque = emDestaque
+    ? '<span class="badge badge--premium">' + BL.icone("alta", "icon--sm") + "Anúncio</span>"
+    : "";
+
+  /* ---------- galeria ---------- */
+  /* Com três fotos vale o mosaico; com menos, uma foto só já basta e
+     evita buraco na grade. */
+  const fotos = e.fotos.slice(0, 3);
+  const galeria = fotos.length >= 3
+    ? '<div class="gallery">' + fotos.map(function (f, i) {
+        return '<img src="' + f + '" alt="' + (i === 0 ? "Foto de " + e.nome : "") + '"' + (i ? ' loading="lazy"' : "") + ">";
+      }).join("") + "</div>"
+    : '<div class="media media--organic"><img src="' + fotos[0] + '" alt="Foto de ' + e.nome + '"></div>';
+
+  /* ---------- página ---------- */
+  conteudo.innerHTML =
+    '<section class="section section--sm"><div class="container">' +
+
+      '<nav class="breadcrumb" aria-label="Você está em">' +
+        '<a class="link--quiet" href="resultados.html">Destinos</a>' + BL.icone("seta", "icon--xs") +
+        '<a class="link--quiet" href="destino.html?id=' + destino.id + '">' + destino.nome + "</a>" + BL.icone("seta", "icon--xs") +
+        "<span>" + e.nome + "</span>" +
+      "</nav>" +
+
+      '<div class="mt-4">' + galeria + "</div>" +
+
+      '<div class="cluster between gap-6 mt-8" style="align-items: flex-end">' +
+        "<div>" +
+          '<span class="tag tag--neutral">' + e.tipo + "</span>" +
+          '<h1 class="mt-2">' + e.nome + "</h1>" +
+          '<p class="text-secondary mt-2">' + BL.icone("pino", "icon--sm") + " " + e.endereco + " · " + destino.nome + ", " + destino.sigla + "</p>" +
+          '<div class="cluster gap-3 mt-4">' + BL.estrelas(e.nota) +
+            "<strong>" + e.nota.toFixed(1) + "</strong>" +
+            '<span class="body-sm text-secondary">' + e.totalAvaliacoes.toLocaleString("pt-BR") + " avaliações</span>" +
+          "</div>" +
+        "</div>" +
+        '<div class="cluster gap-3">' + seloDestaque + selo + "</div>" +
+      "</div>" +
+
+      '<div class="grid grid--aside mt-12">' +
+
+        /* ---------- coluna principal ---------- */
+        "<div>" +
+          '<p style="font-size: var(--text-lg)">' + e.resumo + "</p>" +
+
+          '<h3 class="mt-12">O que o local oferece</h3>' +
+          '<ul class="plan__list mt-4">' + e.comodidades.map(function (c) {
+            return "<li>" + BL.icone("check", "icon--sm") + "<span>" + c + "</span></li>";
+          }).join("") + "</ul>" +
+
+          '<h3 class="mt-12">Onde fica e quando abre</h3>' +
+          '<div class="grid grid--2 mt-4">' +
+            ficha("pino", "Endereço", e.endereco + " — " + destino.nome + ", " + destino.sigla) +
+            ficha("relogio", "Horário", e.horario) +
+            ficha("telefone", "Telefone", e.telefone) +
+            ficha("globo", "Site", '<a class="link" href="#" data-site>' + e.site + "</a>") +
+          "</div>" +
+
+          '<h3 class="mt-12">Avaliações de assinantes</h3>' +
+          '<p class="body-sm text-secondary mt-2">Só quem assina pode ler e escrever avaliações — é o que mantém as notas confiáveis.</p>' +
+          '<div class="mt-6" data-premium data-premium-origem="avaliacoes-local" ' +
+               'data-premium-titulo="Avaliações de assinantes" ' +
+               'data-premium-texto="Assine para ler o que outros viajantes acharam deste local e publicar a sua avaliação depois da viagem.">' +
+            (e.avaliacoes.length
+              ? '<div class="stack">' + e.avaliacoes.map(function (a) {
+                  return '<div class="review">' +
+                    '<img class="avatar" src="' + a.avatar + '" alt="">' +
+                    '<div class="review__body">' +
+                      '<div class="cluster gap-3"><strong class="body-sm">' + a.autor + "</strong>" +
+                        '<span class="tag caption">' + BL.icone("medalha", "icon--sm") + "assinante</span>" +
+                        '<span class="caption text-secondary">' + a.data + "</span></div>" +
+                      BL.estrelas(a.nota) +
+                      "<p>" + a.texto + "</p>" +
+                    "</div></div>";
+                }).join("") + "</div>"
+              : '<p class="text-secondary">Nenhum assinante avaliou este local ainda. Seja a primeira pessoa a contar como foi.</p>') +
+            '<button class="btn btn--outline mt-6" type="button" id="btn-avaliar">' + BL.icone("lapis", "icon--sm") + " Escrever avaliação</button>" +
+          "</div>" +
+
+          (outros().length
+            ? '<h3 class="mt-12">Outros locais em ' + destino.nome + "</h3>" +
+              '<div class="stack gap-3 mt-4">' + outros().map(linhaLocal).join("") + "</div>"
+            : "") +
+        "</div>" +
+
+        /* ---------- coluna lateral ---------- */
+        '<aside class="card blob-tr sticky-col">' +
+          '<p class="caption text-secondary">Faixa de preço</p>' +
+          '<p class="mt-2" style="font-size: var(--text-xl); font-weight: var(--weight-extrabold); line-height: 1.1">' + e.faixa + "</p>" +
+
+          /* Duas saídas, lado a lado e sem disfarce: falar direto com o
+             local (de graça para os dois) ou reservar por um parceiro,
+             que é de onde vem a comissão. */
+          '<button class="btn btn--lg btn--block mt-6" type="button" id="btn-contato">' +
+            BL.icone("balao", "icon--sm") + " Falar com o local</button>" +
+          '<a class="btn btn--outline btn--block mt-3" href="#" id="btn-reservar">' +
+            BL.icone("marcador", "icon--sm") + " Ver preços e reservar</a>" +
+          '<p class="caption text-tertiary mt-2" id="aviso-afiliado"></p>' +
+          '<div class="cluster gap-3 mt-4">' +
+            '<a class="btn btn--outline grow" href="destino.html?id=' + destino.id + '">Ver o destino</a>' +
+            '<button class="btn-icon" type="button" id="btn-compartilhar" aria-label="Copiar link deste local">' + BL.icone("compartilhar", "icon--sm") + "</button>" +
+          "</div>" +
+
+          '<hr class="divider mt-6">' +
+
+          (e.verificado
+            ? '<div class="cluster gap-3 mt-6" style="align-items: flex-start">' +
+                '<span class="icon-tile icon-tile--sm" style="width:40px;height:40px">' + BL.icone("escudo", "icon--sm") + "</span>" +
+                "<div><strong class=\"body-sm\">" + e.selo + "</strong>" +
+                '<p class="caption text-secondary mt-1">A curadoria confere documento, endereço, funcionamento e reputação ' +
+                  'antes de dar o selo, e ele vale por 12 meses. Nenhum plano de anúncio dá direito a ele.</p></div>' +
+              "</div>"
+            : '<div class="lock mt-6"><span class="lock__head">' + BL.icone("pino", "icon--sm") +
+              (e.checagem && e.checagem.estado === "expirado" ? "Checagem vencida" : "Ainda sem selo") + "</span>" +
+              '<p class="caption text-secondary">' +
+              (e.checagem && e.checagem.estado === "expirado"
+                ? "A última checagem foi em " + e.checagem.em + " e venceu. O local segue anunciando, mas sai do filtro de verificados até a próxima checagem — pagar plano não devolve o selo."
+                : "Este local aparece nos resultados, mas ainda não passou pela checagem da nossa curadoria.") +
+              "</p></div>") +
+
+          /* O visitante precisa saber que isto é anúncio — é identificação de
+             publicidade, não cortesia. O que ele não precisa é da mecânica do
+             nosso plano B2B: nome do pacote, o que entra e o que não entra.
+             Isso é conversa com o dono do local, e vive em parceiros.html. */
+          (emDestaque
+            ? '<p class="caption text-secondary mt-6">' + BL.icone("alta", "icon--xs") +
+              " Anúncio: este local paga por um espaço rotulado nas buscas de " + destino.nome +
+              ". A posição é paga e não muda a ordem dos resultados, a nota nem as avaliações.</p>"
+            : "") +
+
+          '<hr class="divider mt-6">' +
+          (meuLocal
+            ? '<div class="cluster between gap-3 mt-6">' +
+                '<span class="caption text-secondary">' + BL.icone("loja", "icon--xs") + " Esta ficha é sua.</span>" +
+                '<button class="btn btn--sm btn--outline" type="button" data-abrir-painel>Abrir no painel</button>' +
+              "</div>"
+            : '<p class="caption text-secondary mt-6">Este estabelecimento é seu? ' +
+              '<a class="link" href="parceiros.html#cadastro">Assuma a ficha e gerencie os dados</a>.</p>') +
+        "</aside>" +
+
+      "</div>" +
+    "</div></section>";
+
+  /* O dono entra no painel já com este local aberto, e no papel certo. */
+  const btnPainel = document.querySelector("[data-abrir-painel]");
+  if (btnPainel && meuLocal) {
+    btnPainel.addEventListener("click", function () {
+      BL.definirLocalAtivo(meuLocal.id);
+      BL.definirModo("estabelecimento");
+      location.href = "parceiros-painel.html";
+    });
+  }
+
+  /* ---------- blocos auxiliares ---------- */
+  function ficha(icone, rotulo, valor) {
+    return '<div class="card card--flat card--sm">' +
+      '<div class="cluster gap-2">' + BL.icone(icone, "icon--sm") + '<span class="caption strong text-secondary">' + rotulo + "</span></div>" +
+      '<p class="body-sm mt-2">' + valor + "</p></div>";
+  }
+
+  function outros() {
+    return blEstabelecimentosDoDestino(e.destinoId).filter(function (x) { return x.id !== e.id; });
+  }
+
+  function linhaLocal(l) {
+    return '<a class="vcard" href="estabelecimento.html?id=' + l.id + '">' +
+      '<img class="vcard__thumb" src="' + l.fotos[0] + '" alt="" loading="lazy">' +
+      '<div class="vcard__body">' +
+        '<div class="cluster gap-2"><strong>' + l.nome + "</strong>" +
+          (l.verificado ? '<span class="tag tag--success">' + BL.icone("escudo", "icon--sm") + "verificado</span>" : "") +
+          (l.plano === "destaque" ? '<span class="tag">' + BL.icone("alta", "icon--sm") + "anúncio</span>" : "") +
+        "</div>" +
+        '<p class="caption text-secondary">' + l.tipo + " · " + l.faixa + "</p>" +
+        '<div class="cluster gap-2">' + BL.estrelas(l.nota) + '<span class="caption strong">' + l.nota.toFixed(1) + "</span></div>" +
+      "</div>" +
+      '<span class="vcard__seta">' + BL.icone("seta", "icon--sm") + "</span></a>";
+  }
+
+  /* ---------- ações ---------- */
+  BL.aplicarBloqueios();
+
+  const avisoAfiliado = document.getElementById("aviso-afiliado");
+  if (avisoAfiliado) avisoAfiliado.textContent = BL_AVISO_AFILIADO;
+
+  const btnReservar = document.getElementById("btn-reservar");
+  if (btnReservar) {
+    btnReservar.addEventListener("click", function (ev) {
+      ev.preventDefault();
+      /* Hospedagem reserva-se em plataforma; bar e restaurante, não. */
+      const tipo = e.tipo === "Hospedagem" ? "hospedagem" : "experiencia";
+      const a = BL_AFILIADOS.filter(function (x) { return x.id === tipo; })[0] || BL_AFILIADOS[0];
+      BL.toast("No protótipo não há parceiro de verdade. Aqui iria " + a.parceiro + " (comissão de " + a.comissao + ").");
+    });
+  }
+
+  document.getElementById("btn-contato").addEventListener("click", function () {
+    if (!BL.logado()) {
+      location.href = "login.html?next=" + encodeURIComponent("estabelecimento.html?id=" + e.id);
+      return;
+    }
+    BL.toast("No protótipo, a conversa com o estabelecimento é demonstrativa.");
+  });
+
+  document.getElementById("btn-compartilhar").addEventListener("click", function () {
+    const link = location.origin + location.pathname + "?id=" + e.id;
+    if (navigator.clipboard) navigator.clipboard.writeText(link).catch(function () {});
+    BL.toast("Link do local copiado!", "sucesso");
+  });
+
+  const linkSite = BL.$("[data-site]");
+  if (linkSite) {
+    linkSite.addEventListener("click", function (ev) {
+      ev.preventDefault();
+      BL.toast("O site do parceiro é fictício neste protótipo.");
+    });
+  }
+
+  const btnAvaliar = document.getElementById("btn-avaliar");
+  if (btnAvaliar) {
+    btnAvaliar.addEventListener("click", function () {
+      BL.toast("No protótipo, a escrita de avaliação é só demonstrativa.");
+    });
+  }
+})();
+</script>
+</body>
+</html>
