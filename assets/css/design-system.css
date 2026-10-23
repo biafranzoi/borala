@@ -538,6 +538,8 @@ h1 em, h2 em, h3 em, .display em, .title-2xl em, .title-xl em {
 .icon--sm { width: 16px; height: 16px; }
 .icon--lg { width: 28px; height: 28px; }
 .icon--xl { width: 40px; height: 40px; stroke-width: 1.75; }
+/* Para logos de marca que são glifos cheios (o X), e não desenhos de traço. */
+.icon--solid { fill: currentColor; stroke: none; }
 /* selo de ícone circular — é a forma que a marca usa nos cards.
    v3 encolheu o disco e clareou o fundo: a 80px de laranja chapado ele
    competia com o título que estava logo abaixo. */
