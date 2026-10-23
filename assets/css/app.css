@@ -17,32 +17,51 @@
 /* =========================================================================
    MARCA
    Marca denominativa, sem símbolo ao lado. O nome inteiro em Fraunces, em
-   caixa baixa, com um ponto laranja entre "bora" e "lá!" — o ponto é ao
-   mesmo tempo a pausa da fala e o pino de mapa, que é do que o produto
-   trata. A exclamação faz parte do nome, então vem como texto: é
-   selecionável, lida por leitor de tela e achável no Ctrl+F.
+   caixa baixa, e o acento do "á" desenhado como pino de mapa — que é do
+   que o produto trata. Antes havia um ponto laranja entre "bora" e "lá!"
+   fazendo esse papel; virando acento, o símbolo deixa de ser um elemento
+   a mais e passa a ser uma letra, e o nome volta a ser uma palavra só.
+   A exclamação saiu do logo: ela segue no nome do produto — títulos de
+   página, textos, aria-label — mas não no desenho da marca.
+   O "a" entra sem acento no HTML, já que o acento virou desenho, e por
+   isso o link do logo carrega aria-label com o nome por extenso. É o
+   preço da ideia: copiar o logo devolve "borala". O resto do site segue
+   com "Boralá!" escrito por extenso.
    ========================================================================= */
 .logo { display: inline-flex; align-items: center; color: var(--text-primary); text-decoration: none; }
 .logo__nome {
   display: inline-flex; align-items: baseline;
   white-space: nowrap;
   font-family: var(--font-display); font-weight: var(--weight-extrabold);
-  font-variation-settings: "SOFT" 0, "WONK" 1;
+  /* opsz fixo, e não o "auto" que a Fraunces usaria: o eixo óptico muda o
+     desenho da letra conforme o corpo, e a 110px o mesmo "b" sai 17% mais
+     estreito do que a 30px. Numa fonte de texto isso é desejável; numa
+     marca, não — logo é um desenho só, igual em qualquer tamanho. Fixado
+     em 30, que é o corpo em que a marca de fato vive. Sem isso, o
+     cabeçalho e o monograma desenhariam "b"s diferentes entre si. */
+  font-variation-settings: "SOFT" 0, "WONK" 1, "opsz" 30;
   font-size: 30px; letter-spacing: -.03em; line-height: 1;
 }
-/* O ponto sobe até a altura de x: na linha de base ele viraria um ponto
-   final, e aí a marca lê como frase terminada em vez de convite. */
-.logo__ponto {
-  width: 9px; height: 9px; flex: none;
-  display: inline-block; border-radius: 50%;
-  margin-inline: 3px;
-  background: var(--c-brand-500);
-  translate: 0 -12px;
+/* O pino fica ancorado no próprio "a", e tudo é medido em em: a caixa de
+   linha acompanha o font-size, então a mesma regra serve para o hero e
+   para o cabeçalho, sem uma versão por tamanho.
+   A descida da fonte vale .147em e a altura de x, .5em — com bottom de
+   .71em a ponta para .56em acima da linha de base, com uma folga pequena
+   por cima do "a". A largura é sempre a altura × .8, que é a proporção
+   do viewBox: é o que mantém a gota com o mesmo desenho em qualquer
+   escala. O giro refaz a diagonal do acento agudo em vez de brigar com
+   ela; como ele acontece em torno do centro e joga a ponta para a
+   esquerda, o translate menor que -50% devolve a ponta ao eixo da letra. */
+.logo__a { position: relative; }
+.logo__pino {
+  position: absolute; left: 50%; bottom: .71em;
+  width: .288em; height: .36em;
+  translate: -32% 0; rotate: 20deg;
+  fill: var(--c-brand-500);
 }
 .logo--sm .logo__nome { font-size: 23px; }
-.logo--sm .logo__ponto { width: 7px; height: 7px; margin-inline: 2px; translate: 0 -9px; }
 .logo--light { color: var(--c-neutral-0); }
-.logo--light .logo__ponto { background: var(--c-brand-300); }
+.logo--light .logo__pino { fill: var(--c-brand-300); }
 
 /* =========================================================================
    CABEÇALHO

@@ -471,13 +471,20 @@ const BL = (function () {
     return modo() === "estabelecimento" ? NAV_ESTABELECIMENTO : NAV_VIAJANTE;
   }
 
-  /* Marca denominativa: o nome inteiro em Fraunces, em caixa baixa, com
-     um ponto laranja entre "bora" e "lá!" — pausa da fala e pino de mapa
-     ao mesmo tempo. Tudo é texto de verdade, inclusive a exclamação:
-     selecionável, lida por leitor de tela e achável no Ctrl+F. */
+  /* Marca denominativa: o nome inteiro em Fraunces, em caixa baixa, e o
+     acento do "á" desenhado como pino de mapa — que é do que o produto
+     trata. Antes esse papel era de um ponto laranja entre "bora" e "lá!";
+     virando acento, o símbolo deixa de ser um elemento a mais.
+     A letra é texto de verdade: selecionável e lida por leitor de tela.
+     A exceção é o acento, que virou desenho — o "a" vai sem ele no texto,
+     e quem garante o nome por extenso é o aria-label do link. */
+  const LOGO_PINO =
+    '<svg class="logo__pino" viewBox="0 0 24 30" aria-hidden="true">' +
+    '<path d="M12 1a9 9 0 0 0-9 9c0 6.6 9 19 9 19s9-12.4 9-19a9 9 0 0 0-9-9z"/></svg>';
+
   function marcaHTML(classe, href) {
     return '<a class="logo ' + (classe || "") + '" href="' + (href || "index.html") + '" aria-label="Boralá!, página inicial">' +
-      '<span class="logo__nome">bora<i class="logo__ponto" aria-hidden="true"></i>lá!</span></a>';
+      '<span class="logo__nome">boral<span class="logo__a">a' + LOGO_PINO + "</span></span></a>";
   }
 
   /* O botão de troca de papel fica sempre visível no header, como o

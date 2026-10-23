@@ -1,17 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Boralá!">
-  <!-- Monograma da marca denominativa: a inicial em caixa baixa e o ponto
-       laranja, que é o único elemento gráfico que o logo tem. A mesma
-       lógica do wordmark — texto em tinta, ponto em laranja — só que
-       reduzida ao que sobrevive a 16px.
-       A letra é desenhada em formas, não em fonte: favicon não carrega
-       webfont, e com font-family cada sistema entregaria um "b" diferente. -->
+  <!-- Monograma da marca: a inicial em caixa baixa com o acento de pino,
+       o mesmo que o logo usa sobre o "á". A letra vem do contorno real da
+       Fraunces (wght 800, SOFT 0, WONK 1, opsz 30 — os mesmos eixos do
+       CSS), convertido em path: favicon não carrega webfont, e com
+       font-family cada sistema entregaria um "b" diferente. -->
   <rect width="32" height="32" rx="7" fill="#1a1511"/>
-
-  <!-- haste com a serifa de bandeira da ascendente, como no Fraunces -->
-  <path d="M7.9 6.2 10.3 4.9 12.1 5.4 12.1 25.2 8.7 25.2Z" fill="#fbf7f2"/>
-  <!-- bojo: anel grosso que encosta na haste e fecha o "b" -->
-  <circle cx="16.4" cy="18.4" r="5.2" fill="none" stroke="#fbf7f2" stroke-width="3.6"/>
-
-  <!-- o ponto, na altura em que ele fica no logo: acima da altura de x -->
-  <circle cx="24.6" cy="10.4" r="3" fill="#dd3400"/>
+  <g transform="translate(7.75 27.09) scale(0.01199)">
+    <g transform="scale(1 -1)"><path d="M505 1427L505 80L336 12Q268 -11 239.5 -17.5Q211 -24 187 -24Q158 -24 141 -8.5Q124 7 124 39L124 1228Q124 1255 116 1267Q108 1279 91 1283L60 1289Q41 1294 32.5 1305.5Q24 1317 24 1333Q24 1354 35 1366Q46 1378 77 1390L305 1473Q352 1490 378 1497Q404 1504 424 1504Q465 1504 485 1483Q505 1462 505 1427ZM440 644L381 705Q462 835 564 907.5Q666 980 796 980Q914 980 1007 920Q1100 860 1153.5 754Q1207 648 1207 508Q1207 347 1141.5 227Q1076 107 964 40.5Q852 -26 710 -26Q593 -26 506 24Q419 74 358 175L448 239Q492 172 537 141.5Q582 111 634 111Q687 111 727 147Q767 183 789.5 261.5Q812 340 812 469Q812 587 789.5 660.5Q767 734 728 768Q689 802 639 802Q581 802 531.5 764.5Q482 727 440 644Z" fill="#fbf7f2"/><g fill="#dd3400"><g transform="translate(1034.91 1486) rotate(-20) scale(24 -24) translate(-12 -15)"><path d="M12 1a9 9 0 0 0-9 9c0 6.6 9 19 9 19s9-12.4 9-19a9 9 0 0 0-9-9z"/></g></g></g>
+  </g>
 </svg>
