@@ -596,9 +596,12 @@ h1 em, h2 em, h3 em, .display em, .title-2xl em, .title-xl em {
   background-repeat: no-repeat; background-position: right var(--space-4) center; background-size: 18px;
 }
 
-/* Seletor em destaque da busca. Na v2 era uma pílula laranja chapada —
-   com o laranja virando acento, o campo volta a ser campo: texto escuro,
-   hairline, e o laranja reservado para o botão que de fato dispara. */
+/* LEGADO. Era o seletor embutido na frase de busca ("Quero um destino
+   no Brasil em um clima de romance"). Nenhum filtro do produto usa mais:
+   filtro de busca é sempre a barra segmentada (.searchbar), na home e
+   nos resultados — duas anatomias de filtro na mesma tela obrigavam a
+   pessoa a aprender dois padrões. Continua desenhando porque markup
+   antigo não quebra; só deixou de ser a forma recomendada. */
 .select--inline {
   width: auto; min-height: 48px;
   background-color: var(--bg-surface);
@@ -648,10 +651,24 @@ h1 em, h2 em, h3 em, .display em, .title-2xl em, .title-xl em {
 }
 .searchbar__div { width: 1px; height: 34px; flex: none; background: var(--border-subtle); }
 .searchbar .btn { flex: none; min-height: 54px; padding-inline: var(--space-6); }
+
+/* Variante de apoio, para o refinamento que fica recolhido (região,
+   clima). Antes aquele bloco usava caixas com borda dentro de uma frase
+   — um segundo padrão de campo na mesma tela, com outra altura, outra
+   borda e outra seta. Agora é a mesma barra: mesma superfície, mesma
+   hairline, mesmos rótulos, mesmo hover. A única diferença é a sombra,
+   que fica só na barra principal — ela flutua sobre o fundo, esta
+   encosta nela. Cor nenhuma muda: filtro aberto e filtro padrão são a
+   mesma peça. */
+.searchbar--sub {
+  box-shadow: none;
+  padding-right: var(--space-3);
+}
 @media (max-width: 860px) {
   .searchbar { flex-direction: column; align-items: stretch; border-radius: var(--radius-lg); padding: var(--space-2); }
   .searchbar__div { width: 100%; height: 1px; }
   .searchbar .btn { width: 100%; margin-top: var(--space-2); }
+  .searchbar--sub { padding-right: var(--space-2); }
 }
 
 /* caixa de seleção */

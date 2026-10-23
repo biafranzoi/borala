@@ -118,11 +118,21 @@
               <span>Ajustar região e clima</span>
               <b class="quiz__resumo" id="quiz-resumo"></b>
             </summary>
-            <div class="quiz__line mt-5">
-              <span>Quero um destino</span>
-              <select class="select select--inline" name="onde" aria-label="Onde"></select>
-              <span>em um clima de</span>
-              <select class="select select--inline" name="clima" aria-label="Clima da viagem"></select>
+            <!-- Mesma anatomia da barra de cima: um campo por resposta,
+                 rótulo em caixa alta sempre visível, divisória entre os
+                 campos. A frase com caixas embutidas saiu porque
+                 obrigava a pessoa a aprender dois padrões de filtro na
+                 mesma tela. -->
+            <div class="searchbar searchbar--sub mt-4">
+              <label class="searchbar__campo">
+                <span class="searchbar__rotulo">Região</span>
+                <select name="onde" aria-label="Região do destino"></select>
+              </label>
+              <span class="searchbar__div"></span>
+              <label class="searchbar__campo">
+                <span class="searchbar__rotulo">Clima da viagem</span>
+                <select name="clima" aria-label="Clima da viagem"></select>
+              </label>
             </div>
           </details>
         </div>

@@ -22,33 +22,53 @@
       <h1 style="font-size: var(--text-2xl)" id="titulo-resultados">Buscando destinos…</h1>
       <p class="mt-2" id="resumo-busca"></p>
 
-      <!-- Mesma hierarquia da home: origem e tempo na frente, o resto
-           recolhido. Eram cinco caixas de seleção disputando atenção com
-           o painel de filtros logo abaixo. -->
-      <form class="quiz mt-6" id="quiz">
-        <div class="quiz__line">
-          <span>Saindo de</span>
-          <select class="select select--inline" name="origem" aria-label="Cidade de origem"></select>
-          <span>e viajando</span>
-          <select class="select select--inline" name="tempo" aria-label="Tempo máximo de viagem"></select>
-          <button class="btn" type="submit">Atualizar busca <span data-icone="busca" data-icone-classe="icon--sm"></span></button>
+      <!-- A mesma barra da home, campo por campo: quem chega aqui pela
+           busca reencontra os mesmos cinco filtros no mesmo lugar, com o
+           mesmo desenho. Companhia subiu para o terceiro campo, como lá;
+           região e clima continuam recolhidos, porque são refinamento e
+           já disputariam atenção com o painel de filtros ao lado. -->
+      <form class="busca busca--compacta" id="quiz">
+        <div class="searchbar">
+          <label class="searchbar__campo">
+            <span class="searchbar__rotulo">Saindo de</span>
+            <select name="origem" aria-label="Cidade de origem"></select>
+          </label>
+          <span class="searchbar__div"></span>
+          <label class="searchbar__campo">
+            <span class="searchbar__rotulo">Tempo de viagem</span>
+            <select name="tempo" aria-label="Tempo máximo de viagem"></select>
+          </label>
+          <span class="searchbar__div"></span>
+          <label class="searchbar__campo">
+            <span class="searchbar__rotulo">Com quem</span>
+            <select name="pessoas" aria-label="Quantidade de pessoas"></select>
+          </label>
+          <button class="btn btn--lg" type="submit">
+            <span>Atualizar busca</span>
+            <span data-icone="busca" data-icone-classe="icon--sm"></span>
+          </button>
         </div>
 
-        <details class="quiz__mais">
-          <summary>
-            <span data-icone="filtros" data-icone-classe="icon--sm"></span>
-            <span>Ajustar companhia, região e clima</span>
-            <b class="quiz__resumo" id="quiz-resumo"></b>
-          </summary>
-          <div class="quiz__line mt-5">
-            <span>Com</span>
-            <select class="select select--inline" name="pessoas" aria-label="Quantidade de pessoas"></select>
-            <span>para um destino</span>
-            <select class="select select--inline" name="onde" aria-label="Onde"></select>
-            <span>em um clima de</span>
-            <select class="select select--inline" name="clima" aria-label="Clima da viagem"></select>
-          </div>
-        </details>
+        <div class="busca__pe">
+          <details class="quiz__mais">
+            <summary>
+              <span data-icone="filtros" data-icone-classe="icon--sm"></span>
+              <span>Ajustar região e clima</span>
+              <b class="quiz__resumo" id="quiz-resumo"></b>
+            </summary>
+            <div class="searchbar searchbar--sub mt-4">
+              <label class="searchbar__campo">
+                <span class="searchbar__rotulo">Região</span>
+                <select name="onde" aria-label="Região do destino"></select>
+              </label>
+              <span class="searchbar__div"></span>
+              <label class="searchbar__campo">
+                <span class="searchbar__rotulo">Clima da viagem</span>
+                <select name="clima" aria-label="Clima da viagem"></select>
+              </label>
+            </div>
+          </details>
+        </div>
       </form>
     </div>
   </section>
@@ -770,11 +790,11 @@
       (origemAtual ? " · saindo de " + origemAtual.label : "") +
       (origemAtual && tempoAtual && tempoAtual.max !== Infinity ? " · " + tempoAtual.curto : "");
 
-    /* o fecho do bloco recolhido diz o que está selecionado lá dentro */
+    /* o fecho do bloco recolhido diz o que está selecionado lá dentro;
+       companhia saiu daqui porque subiu para a barra, sempre visível */
     const elResumoQuiz = document.getElementById("quiz-resumo");
     if (elResumoQuiz) {
-      elResumoQuiz.textContent = rotulo(BL_OPCOES.pessoas, busca.pessoas).replace("+ ", "") +
-        " · " + rotulo(BL_OPCOES.onde, busca.onde) +
+      elResumoQuiz.textContent = rotulo(BL_OPCOES.onde, busca.onde) +
         " · clima de " + rotulo(BL_OPCOES.clima, busca.clima);
     }
 

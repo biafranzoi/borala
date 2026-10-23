@@ -180,9 +180,18 @@
    tela inteira. O refinamento e a contagem viva descem para o pé, em
    corpo menor, porque são apoio e não a pergunta. */
 .busca { margin-top: clamp(2rem, 4vw, 3.5rem); }
+/* nos resultados a mesma barra entra num hero curto, logo abaixo do
+   título: ali a folga da home sobraria */
+.busca--compacta { margin-top: var(--space-6); }
 .busca__pe { margin-top: var(--space-5); padding-inline: var(--space-5); }
 .busca__pe .quiz__mais { width: auto; border-top: none; padding-top: 0; }
-@media (max-width: 860px) { .busca__pe { padding-inline: 0; } }
+/* a barra de refinamento sai do recuo do pé para encostar nas mesmas
+   bordas da barra principal: as duas peças ficam na mesma coluna */
+.busca__pe .searchbar--sub { margin-inline: calc(var(--space-5) * -1); }
+@media (max-width: 860px) {
+  .busca__pe { padding-inline: 0; }
+  .busca__pe .searchbar--sub { margin-inline: 0; }
+}
 
 /* Faixa premium: contraste de superfície (tinta) em vez de contraste de
    cor (laranja chapado). O laranja sobra para o botão. */
